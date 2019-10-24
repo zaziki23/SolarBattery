@@ -10,6 +10,7 @@ public class SolarManager {
     private Double powerAvg;
 
     public SolarManager() {
+        init();
     }
 
     public void init(){
