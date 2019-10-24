@@ -6,8 +6,8 @@ import java.util.concurrent.TimeUnit;
 
 public class SolarManager {
     private long stopTime = TimeUnit.SECONDS.toMillis(1);
-    private Double power;
-    private Double powerAvg;
+    private Double power = 0.0;
+    private Double powerAvg = 0.0;
 
     public SolarManager() {
         init();
