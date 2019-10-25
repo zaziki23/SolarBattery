@@ -99,12 +99,12 @@ public class ChargeManager {
         Double currentPower = solarManager.getCurrentPower();
         boolean enoughPower = false;
 
-        LOGGER.info("cP:" + currentPower + "W vs load: " + (load + loadOffset) + "W -- charge: " + charging);
 
         if ((load + loadOffset) > currentPower) {
             enoughPower = true;
         }
 
+        LOGGER.info("cP:" + currentPower + "W vs load (with 500W offset): " + (load + loadOffset) + "W -- charge: " + charging + ", enoughPower: " + enoughPower + ", battery: " + battery.isChargeable());
         // if we are charging, it is enough to have good power
         if (battery.isChargeable() && charging && enoughPower) {
             return true;
