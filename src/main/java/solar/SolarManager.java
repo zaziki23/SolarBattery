@@ -41,6 +41,7 @@ public class SolarManager {
         ct.start();
         // that should block startup until dbm is ready
         dbm.getWattage();
+        dbm.getWattageAvg();
     }
 
     public Double getCurrentPower() {

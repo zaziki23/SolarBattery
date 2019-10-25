@@ -32,6 +32,7 @@ public class ChargeManager {
     final GpioPinDigitalOutput meanwellSwitch = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_27, "AC Meanwell", PinState.HIGH);
 
     private static ChargeManager INSTANCE = new ChargeManager();
+
     public static ChargeManager getInstance() {
         return INSTANCE;
     }
@@ -95,17 +96,18 @@ public class ChargeManager {
 
         Double powerAvg = solarManager.getPowerAvg();
         Double currentPower = solarManager.getCurrentPower();
-        LOGGER.info("checking if we should charge: pAvg: " + powerAvg + ", cP: " + currentPower);
 
         if ((load + loadOffset) > currentPower) {
-            LOGGER.info("current power is not enough: cP:" + currentPower + "W vs load: " + (load+loadOffset) + "W");
+            LOGGER.info("current power is not enough: cP:" + currentPower + "W vs load: " + (load + loadOffset) + "W");
             charge = false;
             return charge;
         }
 
         if ((powerAvg > chargeThreshold) || (charging && (currentPower > chargeThreshold))) {
+            if (!charging) {
+                LOGGER.info("we should start charging");
+            }
             charge = true;
-            LOGGER.info("we should start charging");
         }
 
         if (!battery.isChargeable()) {

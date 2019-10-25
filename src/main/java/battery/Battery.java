@@ -1,7 +1,7 @@
 package battery;
 
 public class Battery {
-    private Boolean chargeable = false;
+    private Boolean chargeable = true;
     private Boolean loadable = false;
     private Integer numberOfCells = null;
     private Double voltage;
