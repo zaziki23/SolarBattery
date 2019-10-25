@@ -23,16 +23,15 @@ public class SolarManager {
     }
 
     private void readSolarPowerFromDB() {
-        LOGGER.info("I'm reading  solar values from Database now, first time");
         Thread ct = new Thread("SolarData") {
             @Override
             public void run() {
 
                 while (true) {
                     try {
-                        LOGGER.info("I'm reading  solar values from Database now");
                         power = dbm.getWattage();
                         powerAvg = dbm.getWattageAvg();
+                        LOGGER.info("I'm reading  solar values from Database now: " + powerAvg, ", " + power);
                         ThreadHelper.deepSleep(stopTime);
                     } catch (Throwable t) {
                         t.printStackTrace();

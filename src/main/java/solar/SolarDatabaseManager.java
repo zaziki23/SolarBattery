@@ -37,7 +37,6 @@ public class SolarDatabaseManager extends DatabaseManager {
 
     public Double getWattage() {
         List<Double> doubles = runQuery(RowConverters.DOUBLE, WATTAGE);
-        System.out.println(doubles.toString());
         return Optional.ofNullable(CollectionHelper.getFirst(doubles)).orElse(0.0);
     }
 
@@ -46,7 +45,6 @@ public class SolarDatabaseManager extends DatabaseManager {
         long fiveMinutes = TimeUnit.MINUTES.toSeconds(5);
         pointInTime = pointInTime - fiveMinutes;
         List<Double> doubles = runQuery(RowConverters.DOUBLE, WATTAGE_AVG, pointInTime);
-        System.out.println(doubles.toString());
         return Optional.ofNullable(CollectionHelper.getFirst(doubles)).orElse(0.0);
     }
 

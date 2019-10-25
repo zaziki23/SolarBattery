@@ -47,7 +47,6 @@ public class ChargeManager {
         Thread ct = new Thread("ChargeManager") {
             @Override
             public void run() {
-                ThreadHelper.deepSleep(1000); // wait until db is ready
                 try {
                     if(stop){
                         LOGGER.info("stop was forced, i will shut down");
