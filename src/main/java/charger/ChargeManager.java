@@ -82,11 +82,13 @@ public class ChargeManager {
     private void startCharging() {
 //        meanwell.swichAcOn();
 //        load = meanwell.getOutputPower();
+        charging = true;
         LOGGER.info("start charging");
     }
 
     private void stopCharging() {
 //        meanwell.switchAcOff();
+        charging = false;
         LOGGER.info("stop charging");
     }
 
