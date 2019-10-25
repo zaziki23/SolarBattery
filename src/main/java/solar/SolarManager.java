@@ -1,5 +1,7 @@
 package solar;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ws.palladian.helper.ThreadHelper;
 
 import java.util.concurrent.TimeUnit;
@@ -8,8 +10,11 @@ public class SolarManager {
     private long stopTime = TimeUnit.SECONDS.toMillis(1);
     private Double power = 0.0;
     private Double powerAvg = 0.0;
+    private static final Logger LOGGER = LoggerFactory.getLogger(SolarManager.class);
+    private SolarDatabaseManager dbm;
 
     public SolarManager() {
+        dbm = SolarDatabaseManager.getSDBM();
         init();
     }
 
@@ -18,11 +23,12 @@ public class SolarManager {
     }
 
     private void readSolarPowerFromDB() {
+        LOGGER.info("I'm reading  solar values from Database now");
         Thread ct = new Thread("SolarData") {
             @Override
             public void run() {
 
-                SolarDatabaseManager dbm = SolarDatabaseManager.getSDBM();
+                LOGGER.info("I'm reading  solar values from Database now");
 
                 try {
                     power = dbm.getWattage();

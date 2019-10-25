@@ -94,10 +94,10 @@ public class ChargeManager {
 
         Double powerAvg = solarManager.getPowerAvg();
         Double currentPower = solarManager.getCurrentPower();
-        LOGGER.info("checking if we should charge: pAvg: " + powerAvg + ", currentPower: " + currentPower);
+        LOGGER.info("checking if we should charge: pAvg: " + powerAvg + ", cP: " + currentPower);
 
         if ((load + loadOffset) > currentPower) {
-            LOGGER.info("current power is now enough: " + currentPower + "W vs " + (load+loadOffset) + "W");
+            LOGGER.info("current power is not enough: cP:" + currentPower + "W vs load: " + (load+loadOffset) + "W");
             charge = false;
             return charge;
         }
