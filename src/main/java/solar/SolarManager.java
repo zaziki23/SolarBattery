@@ -31,7 +31,8 @@ public class SolarManager {
                     try {
                         power = dbm.getWattage();
                         powerAvg = dbm.getWattageAvg();
-                        LOGGER.info("I'm reading  solar values from Database now: " + powerAvg, ", " + power);
+                        LOGGER.info("powerAVG : " + powerAvg);
+                        LOGGER.info("currentP : " + power);
                         ThreadHelper.deepSleep(stopTime);
                     } catch (Throwable t) {
                         t.printStackTrace();
