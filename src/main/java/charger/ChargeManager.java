@@ -116,6 +116,8 @@ public class ChargeManager {
             charge = false;
         }
 
+        LOGGER.info("cp: " + currentPower + "W, pAvg: " + powerAvg + "W, load: " + (load + loadOffset) + "W");
+
         return charge;
     }
 
@@ -125,18 +127,18 @@ public class ChargeManager {
             charger.adjustCurrent(Math.min(100, charger.getPowerLevel() + 10));
             load = charger.getOutputPower();
             if (charger.getPowerLevel() == 100) {
-                LOGGER.info("we reached maximum power of charger, now: " + charger.getPowerLevel());
+                LOGGER.info("we reached maximum power of charger, now: " + charger.getPowerLevel() + " %");
             } else {
-                LOGGER.info("we increased charging power, now: " + charger.getPowerLevel());
+                LOGGER.info("we increased charging power, now: " + charger.getPowerLevel() + " %");
             }
         } else if (currentPower < (load + loadOffset)) {
             charger.adjustCurrent(Math.max(0, charger.getPowerLevel() - 10));
             load = charger.getOutputPower();
             if (charger.getPowerLevel() == 0) {
-                LOGGER.info("we reached minimum of charger, now: " + charger.getPowerLevel());
+                LOGGER.info("we reached minimum of charger, now: " + charger.getPowerLevel() + " %");
                 LOGGER.info("we should stop charging now");
             } else {
-                LOGGER.info("we decreased charging power, now: " + charger.getPowerLevel());
+                LOGGER.info("we decreased charging power, now: " + charger.getPowerLevel() + " %");
             }
         }
     }
