@@ -47,29 +47,31 @@ public class ChargeManager {
         Thread ct = new Thread("ChargeManager") {
             @Override
             public void run() {
-                try {
-                    if(stop){
-                        LOGGER.info("stop was forced, i will shut down");
-                        stopCharging();
-                        return;
-                    }
-
-                    if (shouldWeCharge()) {
-                        if (charging) {
-                            adjustChargers(meanwell);
-                        } else {
-                            startCharging();
+                while (true) {
+                    try {
+                        if (stop) {
+                            LOGGER.info("stop was forced, i will shut down");
+                            stopCharging();
+                            return;
                         }
-                    } else if (charging) {
-                        stopCharging();
 
-                        // maybe it is useful to sleep if it is cloudy?
-                        ThreadHelper.deepSleep(downTime);
+                        if (shouldWeCharge()) {
+                            if (charging) {
+                                adjustChargers(meanwell);
+                            } else {
+                                startCharging();
+                            }
+                        } else if (charging) {
+                            stopCharging();
+
+                            // maybe it is useful to sleep if it is cloudy?
+                            ThreadHelper.deepSleep(downTime);
+                        }
+
+                        ThreadHelper.deepSleep(sleep);
+                    } catch (Throwable t) {
+                        t.printStackTrace();
                     }
-
-                    ThreadHelper.deepSleep(sleep);
-                } catch (Throwable t) {
-                    t.printStackTrace();
                 }
             }
         };

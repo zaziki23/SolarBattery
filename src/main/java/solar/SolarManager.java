@@ -31,8 +31,6 @@ public class SolarManager {
                     try {
                         power = dbm.getWattage();
                         powerAvg = dbm.getWattageAvg();
-                        LOGGER.info("powerAVG : " + powerAvg);
-                        LOGGER.info("currentP : " + power);
                         ThreadHelper.deepSleep(stopTime);
                     } catch (Throwable t) {
                         t.printStackTrace();
@@ -41,6 +39,8 @@ public class SolarManager {
             }
         };
         ct.start();
+        // that should block startup until dbm is ready
+        dbm.getWattage();
     }
 
     public Double getCurrentPower() {
