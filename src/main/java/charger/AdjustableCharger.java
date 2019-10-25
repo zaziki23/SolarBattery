@@ -13,6 +13,8 @@ public class AdjustableCharger extends Charger {
         super(outputPower, outputVoltage, myAcSwitch);
         pwmPin = pinNumber;
         SoftPwm.softPwmCreate(pinNumber, 0, 100);
+        powerLevel = 0;
+        this.outputPower = 0.0;
     }
 
     public void adjustCurrent(Integer powerLevel) {
@@ -24,7 +26,7 @@ public class AdjustableCharger extends Charger {
 
     }
 
-    public int getPowerLevel(){
+    public Integer getPowerLevel(){
         return powerLevel;
     }
 
