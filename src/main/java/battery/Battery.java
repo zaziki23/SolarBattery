@@ -25,6 +25,10 @@ public class Battery {
         voltage = 55.0; // FIXME
     }
 
+    public void evaluateStatus(){
+
+    }
+
     public boolean isLoadable() {
         return loadable;
     }
@@ -36,6 +40,7 @@ public class Battery {
     public boolean isChargeable() {
         return chargeable;
     }
+
 
     public void setChargeable(boolean chargeable) {
         this.chargeable = chargeable;

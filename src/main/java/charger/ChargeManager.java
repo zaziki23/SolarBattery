@@ -21,6 +21,7 @@ public class ChargeManager {
     private double surplus = 0.0;
     private double load = 0.0;
     private double loadOffset = 500.0;
+    private double adjustOffset = 250.0;
     private boolean stop = false;
 
     final Integer pwmPin = 28;
@@ -88,6 +89,7 @@ public class ChargeManager {
 
     private void stopCharging() {
 //        meanwell.switchAcOff();
+//        meanwell.adjustCurrent(0);
         charging = false;
         LOGGER.info("stop charging");
     }
@@ -100,7 +102,7 @@ public class ChargeManager {
         Double currentPower = solarManager.getCurrentPower();
 
         if ((load + loadOffset) > currentPower) {
-            LOGGER.info("current power is not enough: cP:" + currentPower + "W vs load: " + (load + loadOffset) + "W");
+            LOGGER.info("current power is not enough: cP:" + currentPower + "W vs load: " + (load + loadOffset) + "W -- charge: " + charging);
             charge = false;
             return charge;
         }
@@ -131,7 +133,7 @@ public class ChargeManager {
             } else {
                 LOGGER.info("we increased charging power, now: " + charger.getPowerLevel() + " %");
             }
-        } else if (currentPower < (load + loadOffset)) {
+        } else if (currentPower < (load * 2)) {
             charger.adjustCurrent(Math.max(0, charger.getPowerLevel() - 10));
             load = charger.getOutputPower();
             if (charger.getPowerLevel() == 0) {
