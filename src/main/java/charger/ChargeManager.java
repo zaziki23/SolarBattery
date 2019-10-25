@@ -95,32 +95,27 @@ public class ChargeManager {
     }
 
     private boolean shouldWeCharge() {
-        boolean charge = false;
-
-
         Double powerAvg = solarManager.getPowerAvg();
         Double currentPower = solarManager.getCurrentPower();
+        boolean enoughPower = false;
+
+        LOGGER.info("cP:" + currentPower + "W vs load: " + (load + loadOffset) + "W -- charge: " + charging);
 
         if ((load + loadOffset) > currentPower) {
-            LOGGER.info("current power is not enough: cP:" + currentPower + "W vs load: " + (load + loadOffset) + "W -- charge: " + charging);
-            charge = false;
-            return charge;
+            enoughPower = true;
         }
 
-        if ((powerAvg > chargeThreshold) || (charging && (currentPower > chargeThreshold))) {
-            if (!charging) {
-                LOGGER.info("we should start charging");
-            }
-            charge = true;
+        // if we are charging, it is enough to have good power
+        if (battery.isChargeable() && charging && enoughPower) {
+            return true;
         }
 
-        if (!battery.isChargeable()) {
-            charge = false;
+        // if we are not charging right now, power should be stable
+        if (battery.isChargeable() && enoughPower && !charging && (powerAvg > (load + loadOffset))) {
+            LOGGER.info("we should start charging");
+            return true;
         }
-
-        LOGGER.info("cp: " + currentPower + "W, pAvg: " + powerAvg + "W, load: " + (load + loadOffset) + "W");
-
-        return charge;
+        return false;
     }
 
     private void adjustChargers(AdjustableCharger charger) {
