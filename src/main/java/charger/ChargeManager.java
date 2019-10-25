@@ -47,6 +47,7 @@ public class ChargeManager {
         Thread ct = new Thread("ChargeManager") {
             @Override
             public void run() {
+                ThreadHelper.deepSleep(1000); // wait until db is ready
                 try {
                     if(stop){
                         LOGGER.info("stop was forced, i will shut down");
@@ -77,21 +78,23 @@ public class ChargeManager {
     }
 
     private void startCharging() {
-        meanwell.swichAcOn();
-        load = meanwell.getOutputPower();
+//        meanwell.swichAcOn();
+//        load = meanwell.getOutputPower();
         LOGGER.info("start charging");
     }
 
     private void stopCharging() {
-        meanwell.switchAcOff();
+//        meanwell.switchAcOff();
         LOGGER.info("stop charging");
     }
 
     private boolean shouldWeCharge() {
         boolean charge = false;
 
+
         Double powerAvg = solarManager.getPowerAvg();
         Double currentPower = solarManager.getCurrentPower();
+        LOGGER.info("checking if we should charge: pAvg: " + powerAvg + ", currentPower: " + currentPower);
 
         if ((load + loadOffset) > currentPower) {
             LOGGER.info("current power is now enough: " + currentPower + "W vs " + (load+loadOffset) + "W");
