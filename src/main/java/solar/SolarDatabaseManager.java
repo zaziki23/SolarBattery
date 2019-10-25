@@ -27,7 +27,8 @@ public class SolarDatabaseManager extends DatabaseManager {
             e.printStackTrace();
         }
 
-        return DatabaseManagerFactory.create(SolarDatabaseManager.class, "com.mysql.jdbc.Driver", "jdbc:mysql://localhost:3306/SBFspot?useServerPrepStmts=false&cachePrepStmts=false&useUnicode=true&characterEncoding=UTF-8&sessionVariables=group_concat_max_len=16777216", "SBFspotUser", "SBFspotPassword");
+        SolarDatabaseManager solarDatabaseManager = DatabaseManagerFactory.create(SolarDatabaseManager.class, "com.mysql.jdbc.Driver", "jdbc:mysql://localhost:3306/SBFspot?useServerPrepStmts=false&cachePrepStmts=false&useUnicode=true&characterEncoding=UTF-8", "SBFspotUser", "SBFspotPassword");
+        return solarDatabaseManager;
     }
 
     protected SolarDatabaseManager(DataSource dataSource) {
