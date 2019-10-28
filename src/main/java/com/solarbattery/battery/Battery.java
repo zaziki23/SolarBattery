@@ -78,7 +78,6 @@ public class Battery {
             OutputStream outputStream = socket.getOutputStream();
             System.out.println("write message to bms");
             outputStream.write(message);
-            outputStream.close();
 
             InputStream inputStream = socket.getInputStream();
 
