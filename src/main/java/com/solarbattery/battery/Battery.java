@@ -4,8 +4,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.List;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 
 public class Battery {
     private Boolean chargeable = true;
@@ -71,6 +71,10 @@ public class Battery {
         return data;
     }
 
+    public static int getInt(byte[] arr, int off) {
+        return arr[off]<<8 &0xFF00 | arr[off+1]&0xFF;
+    }
+
     public static void main(String[] args) {
         try {
             Socket socket = new Socket("localhost", 9998);
@@ -83,11 +87,11 @@ public class Battery {
 
             InputStream inputStream = socket.getInputStream();
 
-            String answer = "";
             Integer response = 0;
             String hexString = "";
-            List<Integer> data = new ArrayList<>();
+            byte[] data = new byte[200];
             System.out.println("now reading for a response");
+            int i = 0;
             while (response != -1 && !hexString.equals("77")) {
                 response = inputStream.read();
                 if (response == -1) {
@@ -95,13 +99,19 @@ public class Battery {
                 } else {
                     hexString = Integer.toHexString(response);
                     if (!hexString.equals("77")) {
-                        answer = answer + hexString;
-                        data.add(response);
+                        data[i] = response.byteValue();
+                        i++;
                     }
                 }
             }
-            // dd301b14b9006adbb8002750000010021391e2b4db50fbfd
-            System.out.println(data);
+
+            ByteBuffer byteBuffer = ByteBuffer.allocateDirect(4);
+            byteBuffer.order(ByteOrder.BIG_ENDIAN);
+            byteBuffer.put(data[2]);
+            byteBuffer.put(data[3]);
+            byteBuffer.flip();
+            int anInt = byteBuffer.getInt();
+            System.out.println("Voltage: :" + (anInt / 100.00));
             System.exit(0);
         } catch (IOException e) {
             e.printStackTrace();
