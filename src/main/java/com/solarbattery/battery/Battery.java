@@ -87,8 +87,7 @@ public class Battery {
             int i = 0;
             while (response != -1) {
                 response = inputStream.read();
-                String hexString = Integer.toHexString(response);
-                if (response == -1 || hexString.equals("77")) {
+                if (response == -1) {
                     System.out.println("Ende");
                     break;
                 } else {
@@ -106,16 +105,10 @@ public class Battery {
             Socket socket = new Socket("localhost", 9998);
 
             byte[] message = hexStringToByteArray("DDA50300FFFD77");
-            byte[] data = new byte[200];
+            byte[] data = new byte[600];
 
             sendMessage(socket, message, data);
             parseGeneric(data);
-
-            message = hexStringToByteArray("DDA50400FFFC77");
-            data = new byte[200];
-
-            sendMessage(socket, message, data);
-            parseCellVoltage(data);
 
             System.exit(0);
         } catch (IOException e) {
@@ -124,11 +117,10 @@ public class Battery {
 
     }
 
-    private static void parseCellVoltage(byte[] data) {
-        System.out.println(Arrays.toString(data));
-    }
-
     private static void parseGeneric(byte[] data) {
+        for (byte datum : data) {
+
+        }
         int anInt = ((data[4] & 0xff) << 8) | (data[5] & 0xff);
         System.out.println("Voltage: :" + (anInt / 100.00));
         anInt = ((data[6] & 0xff) << 8) | (data[7] & 0xff);
