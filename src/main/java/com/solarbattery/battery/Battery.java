@@ -143,6 +143,9 @@ public class Battery {
             anInt = ((data[4+i] & 0xff) << 8) | (data[5+i] & 0xff);
             System.out.println("Cell(" + (i+1) + ")-Voltage: :" + (anInt / 100.00));
         }
-        System.out.println(data);
+        System.out.println(data.toString());
+        for (byte datum : data) {
+            System.out.println(datum);
+        }
     }
 }
