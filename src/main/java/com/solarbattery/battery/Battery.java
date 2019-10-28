@@ -142,7 +142,7 @@ public class Battery {
         System.out.println(Arrays.toString(second));
         for (int i = 0; i < 14; i++) {
             anInt = ((second[4 + (2*i)] & 0xff) << 8) | (second[5 + (2*i)] & 0xff);
-            System.out.println("Cell(" + (i + 1) + ")-Voltage: :" + (anInt / 100.00));
+            System.out.println("Cell(" + (i + 1) + ")-Voltage: :" + (anInt / 1000.00));
         }
     }
 }
