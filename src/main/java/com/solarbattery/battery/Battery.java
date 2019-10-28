@@ -83,15 +83,13 @@ public class Battery {
             InputStream inputStream = socket.getInputStream();
 
             Integer response = 0;
-            String hexString = "";
             System.out.println("now reading for a response");
             int i = 0;
-            while (response != -1 && !hexString.equals("77")) {
+            while (response != -1) {
                 response = inputStream.read();
                 if (response == -1) {
                     System.out.println("ende");
                 } else {
-                    hexString = Integer.toHexString(response);
                     data[i] = response.byteValue();
                     i++;
                 }
