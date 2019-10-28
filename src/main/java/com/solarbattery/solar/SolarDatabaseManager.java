@@ -1,4 +1,4 @@
-package solar;
+package com.solarbattery.solar;
 
 import ws.palladian.helper.collection.CollectionHelper;
 import ws.palladian.persistence.DatabaseManager;

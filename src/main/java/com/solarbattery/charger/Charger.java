@@ -1,4 +1,4 @@
-package charger;
+package com.solarbattery.charger;
 
 import com.pi4j.io.gpio.*;
 import ws.palladian.helper.ThreadHelper;

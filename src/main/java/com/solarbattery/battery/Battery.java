@@ -1,4 +1,4 @@
-package battery;
+package com.solarbattery.battery;
 
 import java.io.IOException;
 import java.io.InputStream;

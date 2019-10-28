@@ -1,4 +1,4 @@
-package solar;
+package com.solarbattery.solar;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

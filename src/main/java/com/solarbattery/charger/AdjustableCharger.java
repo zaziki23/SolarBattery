@@ -1,4 +1,4 @@
-package charger;
+package com.solarbattery.charger;
 
 import com.pi4j.io.gpio.GpioPinDigitalOutput;
 import com.pi4j.wiringpi.SoftPwm;

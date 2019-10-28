@@ -1,10 +1,10 @@
-package charger;
+package com.solarbattery.charger;
 
-import battery.Battery;
+import com.solarbattery.battery.Battery;
 import com.pi4j.io.gpio.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import solar.SolarManager;
+import com.solarbattery.solar.SolarManager;
 import ws.palladian.helper.ThreadHelper;
 
 import java.util.concurrent.TimeUnit;
