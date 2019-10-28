@@ -86,7 +86,7 @@ public class Battery {
             String answer = "";
             Integer response = 0;
             String hexString = "";
-            List<String> data = new ArrayList<>();
+            List<Integer> data = new ArrayList<>();
             System.out.println("now reading for a response");
             while (response != -1 && !hexString.equals("77")) {
                 response = inputStream.read();
@@ -96,7 +96,7 @@ public class Battery {
                     hexString = Integer.toHexString(response);
                     if (!hexString.equals("77")) {
                         answer = answer + hexString;
-                        data.add(hexString);
+                        data.add(response);
                     }
                 }
             }
