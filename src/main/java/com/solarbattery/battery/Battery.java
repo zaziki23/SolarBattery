@@ -4,8 +4,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 
 public class Battery {
     private Boolean chargeable = true;
@@ -105,12 +103,7 @@ public class Battery {
                 }
             }
 
-            ByteBuffer byteBuffer = ByteBuffer.allocateDirect(4);
-            byteBuffer.order(ByteOrder.BIG_ENDIAN);
-            byteBuffer.put(data[2]);
-            byteBuffer.put(data[3]);
-            byteBuffer.flip();
-            int anInt = byteBuffer.getInt();
+            int anInt = ((data[2] & 0xff) << 8) | (data[3] & 0xff);
             System.out.println("Voltage: :" + (anInt / 100.00));
             System.exit(0);
         } catch (IOException e) {
