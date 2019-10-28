@@ -1,5 +1,7 @@
 package com.solarbattery.battery;
 
+import ws.palladian.helper.ThreadHelper;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -95,6 +97,19 @@ public class Battery {
                     i++;
                 }
             }
+            ThreadHelper.deepSleep(100);
+            response = 0;
+            // fixme now try to read again
+            while (response != -1) {
+                response = inputStream.read();
+                if (response == -1) {
+                    System.out.println("Ende");
+                    break;
+                } else {
+                    data[i] = response.byteValue();
+                    i++;
+                }
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -118,9 +133,7 @@ public class Battery {
     }
 
     private static void parseGeneric(byte[] data) {
-        for (byte datum : data) {
 
-        }
         int anInt = ((data[4] & 0xff) << 8) | (data[5] & 0xff);
         System.out.println("Voltage: :" + (anInt / 100.00));
         anInt = ((data[6] & 0xff) << 8) | (data[7] & 0xff);
