@@ -87,8 +87,10 @@ public class Battery {
             int i = 0;
             while (response != -1) {
                 response = inputStream.read();
-                if (response == -1) {
-                    System.out.println("ende");
+                String hexString = Integer.toHexString(response);
+                if (response == -1 || hexString.equals("77")) {
+                    System.out.println("Ende");
+                    break;
                 } else {
                     data[i] = response.byteValue();
                     i++;
@@ -103,7 +105,7 @@ public class Battery {
         try {
             Socket socket = new Socket("localhost", 9998);
 
-            byte[] message = hexStringToByteArray("DDA50300FFFD77DDA50400FFFC77DDA50500FFFB77");
+            byte[] message = hexStringToByteArray("DDA50300FFFD77");
             byte[] data = new byte[200];
 
             sendMessage(socket, message, data);
