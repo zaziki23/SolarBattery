@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.util.Arrays;
 
 public class Battery {
     private Boolean chargeable = true;
@@ -112,11 +113,11 @@ public class Battery {
             sendMessage(socket, message, data);
             parseGeneric(data);
 
-//            message = hexStringToByteArray("DDA50400FFFC77");
-//            data = new byte[200];
-//
-//            sendMessage(socket, message, data);
-//            parseCellVoltage(data);
+            message = hexStringToByteArray("DDA50400FFFC77");
+            data = new byte[200];
+
+            sendMessage(socket, message, data);
+            parseCellVoltage(data);
 
             System.exit(0);
         } catch (IOException e) {
@@ -126,7 +127,7 @@ public class Battery {
     }
 
     private static void parseCellVoltage(byte[] data) {
-
+        System.out.println(Arrays.toString(data));
     }
 
     private static void parseGeneric(byte[] data) {
@@ -139,13 +140,10 @@ public class Battery {
         anInt = data[23];
         System.out.println("SoC: :" + anInt);
 
+        System.out.println(Arrays.toString(data));
         for (int i = 0; i < 14; i++) {
             anInt = ((data[4+i] & 0xff) << 8) | (data[5+i] & 0xff);
             System.out.println("Cell(" + (i+1) + ")-Voltage: :" + (anInt / 100.00));
-        }
-        System.out.println(data.toString());
-        for (byte datum : data) {
-            System.out.println(datum);
         }
     }
 }
