@@ -106,17 +106,17 @@ public class Battery {
         try {
             Socket socket = new Socket("localhost", 9998);
 
-            byte[] message = hexStringToByteArray("DDA50300FFFD77");
+            byte[] message = hexStringToByteArray("DDA50300FFFD77DDA50400FFFC77DDA50500FFFB77");
             byte[] data = new byte[200];
 
             sendMessage(socket, message, data);
             parseGeneric(data);
 
-            message = hexStringToByteArray("DDA50400FFFC77");
-            data = new byte[200];
-
-            sendMessage(socket, message, data);
-            parseCellVoltage(data);
+//            message = hexStringToByteArray("DDA50400FFFC77");
+//            data = new byte[200];
+//
+//            sendMessage(socket, message, data);
+//            parseCellVoltage(data);
 
             System.exit(0);
         } catch (IOException e) {
@@ -126,10 +126,7 @@ public class Battery {
     }
 
     private static void parseCellVoltage(byte[] data) {
-        for (int i = 0; i < 14; i++) {
-            int anInt = ((data[4+i] & 0xff) << 8) | (data[5+i] & 0xff);
-            System.out.println("Cell(" + (i+1) + ")-Voltage: :" + (anInt / 100.00));
-        }
+
     }
 
     private static void parseGeneric(byte[] data) {
@@ -141,5 +138,11 @@ public class Battery {
         System.out.println("Balance: :" + anInt);
         anInt = data[23];
         System.out.println("SoC: :" + anInt);
+
+        for (int i = 0; i < 14; i++) {
+            anInt = ((data[4+i] & 0xff) << 8) | (data[5+i] & 0xff);
+            System.out.println("Cell(" + (i+1) + ")-Voltage: :" + (anInt / 100.00));
+        }
+        System.out.println(data);
     }
 }
