@@ -1,7 +1,5 @@
 package com.solarbattery.battery;
 
-import ws.palladian.helper.ThreadHelper;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -73,10 +71,10 @@ public class Battery {
     }
 
     public static int getInt(byte[] arr, int off) {
-        return arr[off]<<8 &0xFF00 | arr[off+1]&0xFF;
+        return arr[off] << 8 & 0xFF00 | arr[off + 1] & 0xFF;
     }
 
-    public static void sendMessage(Socket socket, byte[] message, byte[] data){
+    public static void sendMessage(Socket socket, byte[] message, byte[] first, byte[] second) {
         try {
             OutputStream outputStream = socket.getOutputStream();
             System.out.println("write message to bms");
@@ -87,25 +85,21 @@ public class Battery {
             Integer response = 0;
             System.out.println("now reading for a response");
             int i = 0;
-            while (response != -1) {
+            byte[] data = first;
+            int done = 0;
+            while (response != -1 && done != 2) {
                 response = inputStream.read();
                 if (response == -1) {
                     System.out.println("Ende");
                     break;
                 } else {
-                    data[i] = response.byteValue();
-                    i++;
-                }
-            }
-            ThreadHelper.deepSleep(100);
-            response = 0;
-            // fixme now try to read again
-            while (response != -1) {
-                response = inputStream.read();
-                if (response == -1) {
-                    System.out.println("Ende");
-                    break;
-                } else {
+                    String hexString = Integer.toHexString(response);
+                    if (hexString.equals("77")) {
+                        data = second;
+                        i = 0;
+                        done++;
+                        continue;
+                    }
                     data[i] = response.byteValue();
                     i++;
                 }
@@ -120,10 +114,11 @@ public class Battery {
             Socket socket = new Socket("localhost", 9998);
 
             byte[] message = hexStringToByteArray("DDA50300FFFD77");
-            byte[] data = new byte[600];
+            byte[] first = new byte[600];
+            byte[] second = new byte[600];
 
-            sendMessage(socket, message, data);
-            parseGeneric(data);
+            sendMessage(socket, message, first, second);
+            parseGeneric(first, second);
 
             System.exit(0);
         } catch (IOException e) {
@@ -132,21 +127,22 @@ public class Battery {
 
     }
 
-    private static void parseGeneric(byte[] data) {
+    private static void parseGeneric(byte[] first, byte[] second) {
 
-        int anInt = ((data[4] & 0xff) << 8) | (data[5] & 0xff);
+        int anInt = ((first[4] & 0xff) << 8) | (first[5] & 0xff);
         System.out.println("Voltage: :" + (anInt / 100.00));
-        anInt = ((data[6] & 0xff) << 8) | (data[7] & 0xff);
+        anInt = ((first[6] & 0xff) << 8) | (first[7] & 0xff);
         System.out.println("Current: :" + (anInt / 100.00));
-        anInt = ((data[16] & 0xff) << 8) | (data[17] & 0xff);
+        anInt = ((first[16] & 0xff) << 8) | (first[17] & 0xff);
         System.out.println("Balance: :" + anInt);
-        anInt = data[23];
+        anInt = first[23];
         System.out.println("SoC: :" + anInt);
 
-        System.out.println(Arrays.toString(data));
+        System.out.println(Arrays.toString(first));
+        System.out.println(Arrays.toString(second));
         for (int i = 0; i < 14; i++) {
-            anInt = ((data[4+i] & 0xff) << 8) | (data[5+i] & 0xff);
-            System.out.println("Cell(" + (i+1) + ")-Voltage: :" + (anInt / 100.00));
+            anInt = ((second[4 + i] & 0xff) << 8) | (second[5 + i] & 0xff);
+            System.out.println("Cell(" + (i + 1) + ")-Voltage: :" + (anInt / 100.00));
         }
     }
 }
