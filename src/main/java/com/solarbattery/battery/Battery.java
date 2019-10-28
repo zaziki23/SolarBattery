@@ -92,10 +92,8 @@ public class Battery {
                     System.out.println("ende");
                 } else {
                     hexString = Integer.toHexString(response);
-                    if (!hexString.equals("77")) {
-                        data[i] = response.byteValue();
-                        i++;
-                    }
+                    data[i] = response.byteValue();
+                    i++;
                 }
             }
         } catch (Exception e) {
