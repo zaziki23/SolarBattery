@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Battery {
     private Boolean chargeable = true;
@@ -84,6 +86,7 @@ public class Battery {
             String answer = "";
             Integer response = 0;
             String hexString = "";
+            List<String> data = new ArrayList<>();
             System.out.println("now reading for a response");
             while (response != -1 && !hexString.equals("77")) {
                 response = inputStream.read();
@@ -93,10 +96,12 @@ public class Battery {
                     hexString = Integer.toHexString(response);
                     if (!hexString.equals("77")) {
                         answer = answer + hexString;
+                        data.add(hexString);
                     }
                 }
             }
-            System.out.println(answer);
+            // dd301b14b9006adbb8002750000010021391e2b4db50fbfd
+            System.out.println(data);
             System.exit(0);
         } catch (IOException e) {
             e.printStackTrace();
