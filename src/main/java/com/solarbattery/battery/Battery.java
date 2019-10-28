@@ -74,7 +74,9 @@ public class Battery {
             Socket socket = new Socket("localhost", 9998);
 
             byte[] message = hexStringToByteArray("DDA50400FFFC77");
+            System.out.println(message);
             OutputStream outputStream = socket.getOutputStream();
+            System.out.println("write message to bms");
             outputStream.write(message);
             outputStream.close();
 
@@ -82,6 +84,7 @@ public class Battery {
 
             String answer = "";
             Integer response = 0;
+            System.out.println("now reading for a response");
             while (response != -1 && !answer.equals("0x77")) {
                 response = inputStream.read();
                 if(response == -1) {
