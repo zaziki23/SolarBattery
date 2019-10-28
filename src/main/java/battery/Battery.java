@@ -1,5 +1,10 @@
 package battery;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.Socket;
+
 public class Battery {
     private Boolean chargeable = true;
     private Boolean loadable = false;
@@ -16,7 +21,7 @@ public class Battery {
     final private Double SHUTDOWN_MAX_VOLTAGE;
 
 
-    public Battery(Integer numberOfCells){
+    public Battery(Integer numberOfCells) {
         this.numberOfCells = numberOfCells;
         MAX_VOLTAGE = numberOfCells * CELL_MAX_VOLTAGE;
         MIN_VOLTAGE = numberOfCells * CELL_MIN_VOLTAGE;
@@ -25,7 +30,7 @@ public class Battery {
         voltage = 55.0; // FIXME
     }
 
-    public void evaluateStatus(){
+    public void evaluateStatus() {
 
     }
 
@@ -52,5 +57,50 @@ public class Battery {
 
     public void setVoltage(Double voltage) {
         this.voltage = voltage;
+    }
+
+    public static byte[] hexStringToByteArray(String s) {
+        int len = s.length();
+        byte[] data = new byte[len / 2];
+        for (int i = 0; i < len; i += 2) {
+            data[i / 2] = (byte) ((Character.digit(s.charAt(i), 16) << 4)
+                    + Character.digit(s.charAt(i + 1), 16));
+        }
+        return data;
+    }
+
+    public static void main(String[] args) {
+        try {
+            Socket socket = new Socket("localhost", 9998);
+
+            byte[] message = hexStringToByteArray("DDA50400FFFC77");
+            OutputStream outputStream = socket.getOutputStream();
+            outputStream.write(message);
+            outputStream.close();
+
+            InputStream inputStream = socket.getInputStream();
+
+            String answer = "";
+            Integer response = 0;
+            while (response != -1 && !answer.equals("0x77")) {
+                response = inputStream.read();
+                if(response == -1) {
+                    System.out.println("ende");
+                } else {
+                    String hexString = Integer.toHexString(response);
+                    System.out.println(hexString);
+                    if(hexString.equals("0x77")) {
+                        break;
+                    } else {
+                        answer = answer + hexString;
+                    }
+                }
+            }
+            System.out.println(answer);
+            System.exit(0);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
     }
 }
