@@ -103,8 +103,14 @@ public class Battery {
                 }
             }
 
-            int anInt = ((data[2] & 0xff) << 8) | (data[3] & 0xff);
+            int anInt = ((data[4] & 0xff) << 8) | (data[5] & 0xff);
             System.out.println("Voltage: :" + (anInt / 100.00));
+            anInt = ((data[6] & 0xff) << 8) | (data[7] & 0xff);
+            System.out.println("Current: :" + (anInt / 100.00));
+            anInt = ((data[16] & 0xff) << 8) | (data[17] & 0xff);
+            System.out.println("Balance: :" + anInt);
+            anInt = data[23];
+            System.out.println("SoC: :" + anInt);
             System.exit(0);
         } catch (IOException e) {
             e.printStackTrace();
