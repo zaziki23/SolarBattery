@@ -83,17 +83,15 @@ public class Battery {
 
             String answer = "";
             Integer response = 0;
+            String hexString = "";
             System.out.println("now reading for a response");
-            while (response != -1 && !answer.equals("0x77")) {
+            while (response != -1 && !hexString.equals("77")) {
                 response = inputStream.read();
-                if(response == -1) {
+                if (response == -1) {
                     System.out.println("ende");
                 } else {
-                    String hexString = Integer.toHexString(response);
-                    System.out.println(hexString);
-                    if(hexString.equals("0x77")) {
-                        break;
-                    } else {
+                    hexString = Integer.toHexString(response);
+                    if (!hexString.equals("77")) {
                         answer = answer + hexString;
                     }
                 }
