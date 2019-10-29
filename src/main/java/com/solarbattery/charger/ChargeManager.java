@@ -49,31 +49,42 @@ public class ChargeManager {
         Thread ct = new Thread("ChargeManager") {
             @Override
             public void run() {
-                while (true) {
-                    try {
-                        if (stop) {
-                            LOGGER.info("stop was forced, i will shut down");
-                            stopCharging();
-                            return;
-                        }
-
-                        if (shouldWeCharge()) {
-                            if (charging) {
-                                adjustChargers(meanwell);
-                            } else {
-                                startCharging();
+                try {
+                    battery.createSocket();
+                    while (true) {
+                        try {
+                            if (stop) {
+                                LOGGER.info("stop was forced, i will shut down");
+                                stopCharging();
+                                return;
                             }
-                        } else if (charging) {
-                            stopCharging();
 
-                            // maybe it is useful to sleep if it is cloudy?
-                            ThreadHelper.deepSleep(downTime);
+                            int batteryStatus = battery.evaluateStatus();
+                            if(batteryStatus == -1){
+                                LOGGER.error("SERIOUS ISSUE HERE - STOP EVERYTHING");
+                                System.exit(0);
+                            }
+
+                            if (shouldWeCharge()) {
+                                if (charging) {
+                                    adjustChargers(meanwell);
+                                } else {
+                                    startCharging();
+                                }
+                            } else if (charging) {
+                                stopCharging();
+
+                                // maybe it is useful to sleep if it is cloudy?
+                                ThreadHelper.deepSleep(downTime);
+                            }
+
+                            ThreadHelper.deepSleep(sleep);
+                        } catch (Throwable t) {
+                            t.printStackTrace();
                         }
-
-                        ThreadHelper.deepSleep(sleep);
-                    } catch (Throwable t) {
-                        t.printStackTrace();
                     }
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
             }
         };
@@ -104,7 +115,8 @@ public class ChargeManager {
             enoughPower = true;
         }
 
-        LOGGER.info("cP:" + currentPower + "W vs load (with 500W offset): " + (load + loadOffset) + "W -- charge: " + charging + ", enoughPower: " + enoughPower + ", battery: " + battery.isChargeable());
+        LOGGER.info("cP:" + currentPower + "W vs load (with 500W offset): " + (load + loadOffset) + "W -- charge: " + charging + ", enoughPower: " + enoughPower);
+        LOGGER.info("Battery: Voltage: " + battery.getVoltage() + "V, current: " + battery.getCurrent() + "A, balance: " + battery.getBalance() +", cells: " + battery.getCellVoltages() + ", chargeable: " + battery.isChargeable());
         // if we are charging, it is enough to have good power
         if (battery.isChargeable() && charging && enoughPower) {
             return true;
