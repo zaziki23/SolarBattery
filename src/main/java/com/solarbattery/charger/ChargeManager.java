@@ -111,12 +111,11 @@ public class ChargeManager {
         boolean enoughPower = false;
 
 
-        if ((load + loadOffset) > currentPower) {
+        if ((load + loadOffset) < currentPower) {
             enoughPower = true;
-            LOGGER.info("enough power!");
         }
 
-        LOGGER.info("cP: " + currentPower + "W vs load (with 500W offset): " + (load + loadOffset) + "W -- charge: " + charging + ", enoughPower: " + enoughPower);
+        LOGGER.info("powerAvg: " + powerAvg + "W, cP: " + currentPower + "W vs load (with 500W offset): " + (load + loadOffset) + "W -- charge: " + charging + ", enoughPower: " + enoughPower);
         LOGGER.info("Battery: Voltage: " + battery.getVoltage() + "V, current: " + battery.getCurrent() + "A, balance: " + battery.getBalance() +", cells: " + battery.getCellVoltages() + ", chargeable: " + battery.isChargeable());
         // if we are charging, it is enough to have good power
         if (battery.isChargeable() && charging && enoughPower) {
