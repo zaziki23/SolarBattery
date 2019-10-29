@@ -199,8 +199,8 @@ public class Battery {
         this.setSoC(anInt);
 
         for (int i = 0; i < 14; i++) {
-            anInt = ((second[4 + i] & 0xff) << 8) | (second[5 + i] & 0xff);
-            cellVoltages.put(i + 1, (anInt / 100.0));
+            anInt = ((second[4 + (2*i)] & 0xff) << 8) | (second[5 + (2*i)] & 0xff);
+            cellVoltages.put(i + 1, (anInt / 1000.0));
         }
     }
 
