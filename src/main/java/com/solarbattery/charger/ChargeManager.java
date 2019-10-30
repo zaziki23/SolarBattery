@@ -92,16 +92,18 @@ public class ChargeManager {
     }
 
     private void startCharging() {
-//        meanwell.swichAcOn();
+        meanwell.swichAcOn();
+        meanwell.adjustCurrent(0);
 //        load = meanwell.getOutputPower();
         charging = true;
         LOGGER.info("start charging");
     }
 
     private void stopCharging() {
-//        meanwell.switchAcOff();
-//        meanwell.adjustCurrent(0);
+        meanwell.switchAcOff();
+        meanwell.adjustCurrent(0);
         charging = false;
+        load = 0;
         LOGGER.info("stop charging");
     }
 
@@ -133,14 +135,16 @@ public class ChargeManager {
     private void adjustChargers(AdjustableCharger charger) {
         Double currentPower = solarManager.getCurrentPower();
         if (currentPower > (load + loadOffset) && charger.getPowerLevel() < 100) {
-            charger.adjustCurrent(Math.min(100, charger.getPowerLevel() + 10));
+            double surplus = (currentPower - load - loadOffset) * 0.75;
+            Double powerLevel = ((surplus / charger.getOUTPUT_POWER_MAX()) * 100);
+            charger.adjustCurrent(Math.max(100, Math.max(0, powerLevel.intValue())));
             load = charger.getOutputPower();
             if (charger.getPowerLevel() == 100) {
                 LOGGER.info("we reached maximum power of charger, now: " + charger.getPowerLevel() + " %");
             } else {
                 LOGGER.info("we increased charging power, now: " + charger.getPowerLevel() + " %");
             }
-        } else if (currentPower < (load * 2)) {
+        } else if (currentPower < ((load * 2) + loadOffset)) {
             charger.adjustCurrent(Math.max(0, charger.getPowerLevel() - 10));
             load = charger.getOutputPower();
             if (charger.getPowerLevel() == 0) {

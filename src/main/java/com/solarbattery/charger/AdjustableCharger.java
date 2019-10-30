@@ -23,7 +23,6 @@ public class AdjustableCharger extends Charger {
         double powerPerVolt = getOUTPUT_POWER_MAX() / 5.0;
         double i = (this.powerLevel / 100.0) * 3.3;
         setOutputPower(i*powerPerVolt);
-
     }
 
     public Integer getPowerLevel(){
