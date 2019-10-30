@@ -72,6 +72,7 @@ public class Battery {
             for (Integer cellNumber : cellVoltages.keySet()) {
                 Double aDouble = cellVoltages.get(cellNumber);
                 if (aDouble > CELL_SHUTDOWN_MAX_VOLTAGE || aDouble < CELL_SHUTDOWN_MIN_VOLTAGE) {
+                    LOGGER.error(cellVoltages.toString());
                     setLoadable(false);
                     setChargeable(false);
                     return -1; // FIXME
