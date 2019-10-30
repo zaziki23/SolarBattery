@@ -31,6 +31,7 @@ public class ChargeManager {
 
     // not that we need to use HIGH to pull the switch to switch off actually
     final GpioPinDigitalOutput meanwellSwitch = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_27, "AC Meanwell", PinState.HIGH);
+//    final GpioPinDigitalOutput meanwellSwitch = null;
 
     private static ChargeManager INSTANCE = new ChargeManager();
 
@@ -60,7 +61,7 @@ public class ChargeManager {
                             }
 
                             int batteryStatus = battery.evaluateStatus();
-                            if(batteryStatus == -1){
+                            if (batteryStatus == -1) {
                                 LOGGER.error("SERIOUS ISSUE HERE - STOP EVERYTHING");
                                 System.exit(0);
                             }
@@ -118,7 +119,7 @@ public class ChargeManager {
         }
 
         LOGGER.info("powerAvg: " + powerAvg + "W, cP: " + currentPower + "W vs load (with 500W offset): " + (load + loadOffset) + "W -- charge: " + charging + ", enoughPower: " + enoughPower);
-        LOGGER.info("Battery: Voltage: " + battery.getVoltage() + "V, current: " + battery.getCurrent() + "A, balance: " + battery.getBalance() +", cells: " + battery.getCellVoltages() + ", chargeable: " + battery.isChargeable());
+        LOGGER.info("Battery: Voltage: " + battery.getVoltage() + "V, current: " + battery.getCurrent() + "A, balance: " + battery.getBalance() + ", cells: " + battery.getCellVoltages() + ", chargeable: " + battery.isChargeable());
         // if we are charging, it is enough to have good power
         if (battery.isChargeable() && charging && enoughPower) {
             return true;
@@ -134,26 +135,20 @@ public class ChargeManager {
 
     private void adjustChargers(AdjustableCharger charger) {
         Double currentPower = solarManager.getCurrentPower();
-        if (currentPower > (load + loadOffset) && charger.getPowerLevel() < 100) {
-            double surplus = (currentPower - load - loadOffset) * 0.75;
-            Double powerLevel = ((surplus / charger.getOUTPUT_POWER_MAX()) * 100);
-            charger.adjustCurrent(Math.max(100, Math.max(0, powerLevel.intValue())));
-            load = charger.getOutputPower();
-            if (charger.getPowerLevel() == 100) {
-                LOGGER.info("we reached maximum power of charger, now: " + charger.getPowerLevel() + " %");
-            } else {
-                LOGGER.info("we increased charging power, now: " + charger.getPowerLevel() + " %");
-            }
-        } else if (currentPower < ((load * 2) + loadOffset)) {
-            charger.adjustCurrent(Math.max(0, charger.getPowerLevel() - 10));
-            load = charger.getOutputPower();
-            if (charger.getPowerLevel() == 0) {
-                LOGGER.info("we reached minimum of charger, now: " + charger.getPowerLevel() + " %");
-                LOGGER.info("we should stop charging now");
-            } else {
-                LOGGER.info("we decreased charging power, now: " + charger.getPowerLevel() + " %");
-            }
+        if (currentPower > load + loadOffset && charger.getPowerLevel() >= 99) {
+            return;
         }
+        double surplus = (currentPower - load - loadOffset) * 0.75;
+
+        Double powerLevel = ((surplus / charger.getOUTPUT_POWER_MAX()) * 100);
+        charger.adjustCurrent(Math.min(100, Math.max(0, powerLevel.intValue())));
+        load = charger.getOutputPower();
+        if (charger.getPowerLevel() == 100) {
+            LOGGER.info("we reached maximum power of charger, now: " + charger.getPowerLevel() + " %");
+        } else {
+            LOGGER.info("we changed charging power, now: " + charger.getPowerLevel() + " %");
+        }
+
     }
 
     public void setStop(boolean stop) {
