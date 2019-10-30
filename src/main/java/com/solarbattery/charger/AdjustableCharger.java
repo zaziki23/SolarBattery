@@ -19,7 +19,7 @@ public class AdjustableCharger extends Charger {
 
     public void adjustCurrent(Integer powerLevel) {
         this.powerLevel = powerLevel;
-//        SoftPwm.softPwmWrite(pwmPin, this.powerLevel);
+        SoftPwm.softPwmWrite(pwmPin, this.powerLevel);
         double powerPerVolt = getOUTPUT_POWER_MAX() / 5.0;
         double i = (this.powerLevel / 100.0) * 3.3;
         setOutputPower(i*powerPerVolt);
