@@ -2,6 +2,7 @@ package com.solarbattery.charger;
 
 import com.solarbattery.battery.Battery;
 import com.pi4j.io.gpio.*;
+import com.solarbattery.meter.PowerMeter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.solarbattery.solar.SolarManager;
@@ -23,6 +24,8 @@ public class ChargeManager {
     private double loadOffset = 500.0;
     private double adjustOffset = 250.0;
     private boolean stop = false;
+    private PowerMeter inputMeter = null;
+    private PowerMeter outputMeter = null;
 
     final Integer pwmPin = 28;
     final GpioController gpio = GpioFactory.getInstance();
@@ -44,6 +47,7 @@ public class ChargeManager {
         battery = new Battery(14);
         meanwell = new AdjustableCharger(750.0, 57.0, meanwellSwitch, pwmPin);
         solarManager = new SolarManager();
+        inputMeter = new PowerMeter("http://192.168.178.3");
     }
 
     public void run() {
@@ -54,6 +58,7 @@ public class ChargeManager {
                     battery.createSocket();
                     while (true) {
                         try {
+                            load = inputMeter.getPower();
                             if (stop) {
                                 LOGGER.info("stop was forced, i will shut down");
                                 stopCharging();
@@ -95,7 +100,6 @@ public class ChargeManager {
     private void startCharging() {
         meanwell.swichAcOn();
         meanwell.adjustCurrent(0);
-//        load = meanwell.getOutputPower();
         charging = true;
         LOGGER.info("start charging");
     }
@@ -104,7 +108,6 @@ public class ChargeManager {
         meanwell.switchAcOff();
         meanwell.adjustCurrent(0);
         charging = false;
-        load = 0;
         LOGGER.info("stop charging");
     }
 
@@ -142,7 +145,6 @@ public class ChargeManager {
 
         Double powerLevel = ((surplus / charger.getOUTPUT_POWER_MAX()) * 100);
         charger.adjustCurrent(Math.min(100, Math.max(0, powerLevel.intValue())));
-        load = charger.getOutputPower();
         if (charger.getPowerLevel() == 100) {
             LOGGER.info("we reached maximum power of charger, now: " + charger.getPowerLevel() + " %");
         } else {
