@@ -33,7 +33,8 @@ public class ChargeManager {
     private static final Logger LOGGER = LoggerFactory.getLogger(ChargeManager.class);
 
     // not that we need to use HIGH to pull the switch to switch off actually
-    final GpioPinDigitalOutput meanwellSwitch = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_27, "AC Meanwell", PinState.HIGH);
+    private final GpioPinDigitalOutput acMeanwell = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_27, "AC Meanwell", PinState.HIGH);
+    private final GpioPinDigitalOutput dcMeanwell = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_29, "DC Meanwell", PinState.LOW);
 //    final GpioPinDigitalOutput meanwellSwitch = null;
 
     private static ChargeManager INSTANCE = new ChargeManager();
@@ -45,7 +46,7 @@ public class ChargeManager {
 
     public ChargeManager() {
         battery = new Battery(14);
-        meanwell = new AdjustableCharger(750.0, 57.0, meanwellSwitch, pwmPin);
+        meanwell = new AdjustableCharger(750.0, 57.0, acMeanwell, dcMeanwell, pwmPin);
         solarManager = new SolarManager();
         inputMeter = new PowerMeter("http://192.168.178.3");
     }
