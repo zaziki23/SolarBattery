@@ -3,6 +3,7 @@ package com.solarbattery.battery;
 import com.solarbattery.charger.ChargeManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ws.palladian.helper.StopWatch;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -61,7 +62,10 @@ public class Battery {
             byte[] first = new byte[600];
             byte[] second = new byte[600];
 
-            sendMessage(socket, message, first, second);
+            sendMessage(socket, message, first);
+            message = hexStringToByteArray("DDA50400FFFC77");
+            sendMessage(socket, message, second);
+
             parseData(first, second);
 
             if (voltage > MAX_VOLTAGE || voltage < MIN_VOLTAGE) {
@@ -157,7 +161,7 @@ public class Battery {
         return data;
     }
 
-    private static void sendMessage(Socket socket, byte[] message, byte[] first, byte[] second) {
+    private static void sendMessage(Socket socket, byte[] message, byte[] first) {
         try {
             OutputStream outputStream = socket.getOutputStream();
             outputStream.write(message);
@@ -166,9 +170,8 @@ public class Battery {
 
             Integer response = 0;
             int i = 0;
-            byte[] data = first;
-            int done = 0;
-            while (response != -1 && done != 2) {
+            StopWatch stopWatch = new StopWatch();
+            while (response != -1 && stopWatch.getElapsedTime() < TimeUnit.SECONDS.toMillis(3)) {
                 response = inputStream.read();
                 if (response == -1) {
                     LOGGER.error("no valid response");
@@ -176,12 +179,9 @@ public class Battery {
                 } else {
                     String hexString = Integer.toHexString(response);
                     if (hexString.equals("77")) {
-                        data = second;
-                        i = 0;
-                        done++;
-                        continue;
+                        break;
                     }
-                    data[i] = response.byteValue();
+                    first[i] = response.byteValue();
                     i++;
                 }
             }
