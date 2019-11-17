@@ -81,20 +81,20 @@ public class Battery {
                     // maybe balance issue
                     setChargeable(false);
                     setLoadable(true);
-                    LOGGER.info("Cell "+ cellNumber + " reached " + aDouble + "V");
+                    LOGGER.info("Cell " + cellNumber + " reached " + aDouble + "V");
                     return 1;
                 }
                 if (aDouble < CELL_MIN_VOLTAGE) {
                     setChargeable(true);
                     setLoadable(false);
-                    LOGGER.info("Cell "+ cellNumber + " reached " + aDouble + "V");
+                    LOGGER.info("Cell " + cellNumber + " reached " + aDouble + "V");
                     return 2;
-                } else {
-                    setChargeable(true);
-                    setLoadable(true);
                 }
             }
             lastTime = System.currentTimeMillis();
+
+            setChargeable(true);
+            setLoadable(true);
             return 0;
         }
         return 0;
@@ -105,7 +105,7 @@ public class Battery {
     }
 
     public void setLoadable(boolean loadable) {
-        if(!loadable) {
+        if (!loadable) {
             LOGGER.info("battery is not ready for load");
         } else {
             LOGGER.info("battery is ready for load");
@@ -120,15 +120,16 @@ public class Battery {
 
     public void setChargeable(boolean chargeable) {
 
-        if(!chargeable) {
+        if (this.chargeable && !chargeable) {
             LOGGER.info("battery is not ready for charge");
-        } else {
+        }
+        if (!this.chargeable && chargeable) {
             LOGGER.info("battery is ready for charge");
         }
         this.chargeable = chargeable;
     }
 
-    public String getCellVoltages(){
+    public String getCellVoltages() {
         StringBuilder stringBuilder = new StringBuilder();
         for (Integer integer : cellVoltages.keySet()) {
             stringBuilder.append(integer + ": " + cellVoltages.get(integer) + "  ");
@@ -203,7 +204,7 @@ public class Battery {
         this.setSoC(anInt);
 
         for (int i = 0; i < 14; i++) {
-            anInt = ((second[4 + (2*i)] & 0xff) << 8) | (second[5 + (2*i)] & 0xff);
+            anInt = ((second[4 + (2 * i)] & 0xff) << 8) | (second[5 + (2 * i)] & 0xff);
             cellVoltages.put(i + 1, (anInt / 1000.0));
         }
     }

@@ -72,11 +72,6 @@ public class ChargeManager {
                                 return;
                             }
 
-                            if(battery.isLoadable()) {
-                                LOGGER.info("activate LOAD NOW");
-                                inverter.switchOn(loadPreLoader);
-                            }
-
                             int batteryStatus = battery.evaluateStatus();
                             if (batteryStatus == -1) {
                                 LOGGER.error("SERIOUS ISSUE HERE - STOP EVERYTHING");
@@ -87,7 +82,8 @@ public class ChargeManager {
                                 continue;
                             }
 
-                            if (shouldWeCharge()) {
+                            boolean shouldWeCharge = shouldWeCharge();
+                            if (shouldWeCharge) {
                                 inverter.switchOff(loadPreLoader);
                                 LOGGER.info("deactivate LOAD NOW");
                                 if (charging) {
@@ -97,9 +93,14 @@ public class ChargeManager {
                                 }
                             } else if (charging) {
                                 stopCharging();
-
                                 // maybe it is useful to sleep if it is cloudy?
                                 ThreadHelper.deepSleep(downTime);
+                            }
+                            if(!shouldWeCharge) {
+                                if(battery.isLoadable()) {
+                                    LOGGER.info("activate LOAD");
+                                    inverter.switchOn(loadPreLoader);
+                                }
                             }
 
                             ThreadHelper.deepSleep(sleep);

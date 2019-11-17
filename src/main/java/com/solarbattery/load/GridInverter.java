@@ -8,14 +8,20 @@ public class GridInverter {
     private final Double OUTPUT_POWER_MAX;
     private Integer pwmPin;
     private Integer powerLevel = 0;
+    private boolean on = false;
 
     public GridInverter(Double outputPower, int myPWMPin) {
         this.OUTPUT_POWER_MAX = outputPower;
         this.pwmPin = myPWMPin;
         SoftPwm.softPwmCreate(pwmPin, 0, 100);
+        on = false;
     }
 
     public void switchOn(GpioPinDigitalOutput pinDigitalOutput) {
+        if(on) {
+            return;
+        }
+        on = true;
         pinDigitalOutput.high();
         ThreadHelper.deepSleep(2000);
         adjustCurrent(10);
