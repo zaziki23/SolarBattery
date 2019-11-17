@@ -52,6 +52,7 @@ public class Battery {
 
     public void createSocket() throws IOException {
         socket = new Socket("localhost", 9998);
+        socket.setSoTimeout(5000);
     }
 
     public int evaluateStatus() {
@@ -170,20 +171,25 @@ public class Battery {
 
             Integer response = 0;
             int i = 0;
-            StopWatch stopWatch = new StopWatch();
-            while (response != -1 && stopWatch.getElapsedTime() < TimeUnit.SECONDS.toMillis(3)) {
-                response = inputStream.read();
-                if (response == -1) {
-                    LOGGER.error("no valid response");
-                    break;
-                } else {
-                    String hexString = Integer.toHexString(response);
-                    if (hexString.equals("77")) {
+            try {
+                while (response != -1) {
+                    response = inputStream.read();
+                    if (response == -1) {
+                        LOGGER.error("no valid response");
                         break;
+                    } else {
+                        String hexString = Integer.toHexString(response);
+                        if (hexString.equals("77")) {
+                            break;
+                        }
+                        first[i] = response.byteValue();
+                        i++;
                     }
-                    first[i] = response.byteValue();
-                    i++;
                 }
+                // read as much as you want - blocks until timeout elapses
+            } catch (java.net.SocketTimeoutException e) {
+                // read timed out - you may throw an exception of your choice
+                LOGGER.info("no response from bms in time");
             }
         } catch (Exception e) {
             e.printStackTrace();
