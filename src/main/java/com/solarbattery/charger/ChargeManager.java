@@ -52,7 +52,7 @@ public class ChargeManager {
         loadPreLoader.low();
         inverter = new GridInverter(600.0, 25);
         battery = new Battery(14);
-        meanwell = new AdjustableCharger(750.0, 57.0, acMeanwell, dcMeanwell, pwmPin);
+        meanwell = new AdjustableCharger(750.0, 57.0, acMeanwell, dcMeanwell, pwmPinCharger);
         solarManager = new SolarManager();
         inputMeter = new PowerMeter("http://192.168.178.3");
     }
