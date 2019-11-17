@@ -26,7 +26,7 @@ public class Battery {
 
     final private Double CELL_SHUTDOWN_MAX_VOLTAGE = 4.20; // FIXME
     final private Double CELL_SHUTDOWN_MIN_VOLTAGE = 2.85; // FIXME
-    final private Double CELL_MAX_VOLTAGE = CELL_SHUTDOWN_MAX_VOLTAGE - 0.15; // FIXME
+    final private Double CELL_MAX_VOLTAGE = CELL_SHUTDOWN_MAX_VOLTAGE - 0.10; // FIXME
     final private Double CELL_MIN_VOLTAGE = CELL_SHUTDOWN_MIN_VOLTAGE + 0.25; // FIXME
     final private Double MAX_VOLTAGE;
     final private Double MIN_VOLTAGE;

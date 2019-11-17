@@ -69,7 +69,10 @@ public class ChargeManager {
                             int batteryStatus = battery.evaluateStatus();
                             if (batteryStatus == -1) {
                                 LOGGER.error("SERIOUS ISSUE HERE - STOP EVERYTHING");
-                                System.exit(0);
+                                charging = false;
+                                meanwell.switchAcOff();
+                                ThreadHelper.deepSleep(downTime);
+                                continue;
                             }
 
                             if (shouldWeCharge()) {
