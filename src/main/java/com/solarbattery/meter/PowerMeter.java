@@ -20,7 +20,9 @@ public class PowerMeter {
         Double power = null;
 
         try {
-            JsonObject jsonObject = new DocumentRetriever().tryGetJsonObject(url + "/status");
+            DocumentRetriever documentRetriever = new DocumentRetriever();
+            documentRetriever.getHttpRetriever().setConnectionTimeout(1000);
+            JsonObject jsonObject = documentRetriever.tryGetJsonObject(url + "/status");
             JsonArray meters = jsonObject.tryGetJsonArray("meters");
             JsonObject firstMeter = meters.tryGetJsonObject(0);
             power = firstMeter.tryGetDouble("power");
