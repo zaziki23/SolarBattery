@@ -50,7 +50,7 @@ public class ChargeManager {
 
     public ChargeManager() {
         loadPreLoader.low();
-        inverter = new GridInverter(600.0, 25);
+        inverter = new GridInverter(600.0, pwmInverter);
         battery = new Battery(14);
         meanwell = new AdjustableCharger(750.0, 57.0, acMeanwell, dcMeanwell, pwmPinCharger);
         solarManager = new SolarManager();
@@ -62,49 +62,55 @@ public class ChargeManager {
             @Override
             public void run() {
                 try {
-                    battery.createSocket();
                     while (true) {
                         try {
-                            load = inputMeter.getPower();
-                            if (stop) {
-                                LOGGER.info("stop was forced, i will shut down");
-                                stopCharging();
-                                return;
-                            }
+                            battery.createSocket();
+                            while (true) {
+                                try {
+                                    load = inputMeter.getPower();
+                                    if (stop) {
+                                        LOGGER.info("stop was forced, i will shut down");
+                                        stopCharging();
+                                        return;
+                                    }
 
-                            int batteryStatus = battery.evaluateStatus();
-                            if (batteryStatus == -1) {
-                                LOGGER.error("SERIOUS ISSUE HERE - STOP EVERYTHING");
-                                inverter.switchOff(loadPreLoader);
-                                charging = false;
-                                meanwell.switchAcOff();
-                                ThreadHelper.deepSleep(downTime);
-                                continue;
-                            }
+                                    int batteryStatus = battery.evaluateStatus();
+                                    if (batteryStatus == -1) {
+                                        LOGGER.error("SERIOUS ISSUE HERE - STOP EVERYTHING");
+                                        inverter.switchOff(loadPreLoader);
+                                        charging = false;
+                                        meanwell.switchAcOff();
+                                        ThreadHelper.deepSleep(downTime);
+                                        continue;
+                                    }
 
-                            boolean shouldWeCharge = shouldWeCharge();
-                            if (shouldWeCharge) {
-                                inverter.switchOff(loadPreLoader);
-                                LOGGER.info("deactivate LOAD NOW");
-                                if (charging) {
-                                    adjustChargers(meanwell);
-                                } else {
-                                    startCharging();
+                                    boolean shouldWeCharge = shouldWeCharge();
+                                    if (shouldWeCharge) {
+                                        inverter.switchOff(loadPreLoader);
+                                        LOGGER.info("deactivate LOAD NOW");
+                                        if (charging) {
+                                            adjustChargers(meanwell);
+                                        } else {
+                                            startCharging();
+                                        }
+                                    } else if (charging) {
+                                        stopCharging();
+                                        // maybe it is useful to sleep if it is cloudy?
+                                        ThreadHelper.deepSleep(downTime);
+                                    }
+                                    if (!shouldWeCharge) {
+                                        if (battery.isLoadable()) {
+                                            inverter.switchOn(loadPreLoader);
+                                        }
+                                    }
+
+                                    ThreadHelper.deepSleep(sleep);
+                                } catch (Throwable t) {
+                                    t.printStackTrace();
                                 }
-                            } else if (charging) {
-                                stopCharging();
-                                // maybe it is useful to sleep if it is cloudy?
-                                ThreadHelper.deepSleep(downTime);
                             }
-                            if(!shouldWeCharge) {
-                                if(battery.isLoadable()) {
-                                    inverter.switchOn(loadPreLoader);
-                                }
-                            }
-
-                            ThreadHelper.deepSleep(sleep);
-                        } catch (Throwable t) {
-                            t.printStackTrace();
+                        } catch (Exception e) {
+                            e.printStackTrace();
                         }
                     }
                 } catch (Exception e) {

@@ -160,20 +160,18 @@ public class Battery {
     private static void sendMessage(Socket socket, byte[] message, byte[] first, byte[] second) {
         try {
             OutputStream outputStream = socket.getOutputStream();
-            System.out.println("write message to bms");
             outputStream.write(message);
 
             InputStream inputStream = socket.getInputStream();
 
             Integer response = 0;
-            System.out.println("now reading for a response");
             int i = 0;
             byte[] data = first;
             int done = 0;
             while (response != -1 && done != 2) {
                 response = inputStream.read();
                 if (response == -1) {
-                    System.out.println("Ende");
+                    LOGGER.error("no valid response");
                     break;
                 } else {
                     String hexString = Integer.toHexString(response);
