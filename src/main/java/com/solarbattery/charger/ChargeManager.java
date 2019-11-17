@@ -2,6 +2,7 @@ package com.solarbattery.charger;
 
 import com.solarbattery.battery.Battery;
 import com.pi4j.io.gpio.*;
+import com.solarbattery.load.GridInverter;
 import com.solarbattery.meter.PowerMeter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,10 +25,12 @@ public class ChargeManager {
     private double loadOffset = 500.0;
     private double adjustOffset = 250.0;
     private boolean stop = false;
+    private GridInverter inverter = null;
     private PowerMeter inputMeter = null;
     private PowerMeter outputMeter = null;
 
-    final Integer pwmPin = 28;
+    final Integer pwmPinCharger = 28;
+    final Integer pwmInverter = 25;
     final GpioController gpio = GpioFactory.getInstance();
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ChargeManager.class);
@@ -35,6 +38,7 @@ public class ChargeManager {
     // not that we need to use HIGH to pull the switch to switch off actually
     private final GpioPinDigitalOutput acMeanwell = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_27, "AC Meanwell", PinState.HIGH);
     private final GpioPinDigitalOutput dcMeanwell = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_29, "DC Meanwell", PinState.LOW);
+    private final GpioPinDigitalOutput loadPreLoader = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_07, "LOAD PreLoader", PinState.LOW);
 //    final GpioPinDigitalOutput meanwellSwitch = null;
 
     private static ChargeManager INSTANCE = new ChargeManager();
@@ -45,6 +49,8 @@ public class ChargeManager {
 
 
     public ChargeManager() {
+        loadPreLoader.low();
+        inverter = new GridInverter(600.0, 25);
         battery = new Battery(14);
         meanwell = new AdjustableCharger(750.0, 57.0, acMeanwell, dcMeanwell, pwmPin);
         solarManager = new SolarManager();
@@ -66,9 +72,14 @@ public class ChargeManager {
                                 return;
                             }
 
+                            if(battery.isLoadable()) {
+                                inverter.switchOn(loadPreLoader);
+                            }
+
                             int batteryStatus = battery.evaluateStatus();
                             if (batteryStatus == -1) {
                                 LOGGER.error("SERIOUS ISSUE HERE - STOP EVERYTHING");
+                                inverter.switchOff(loadPreLoader);
                                 charging = false;
                                 meanwell.switchAcOff();
                                 ThreadHelper.deepSleep(downTime);
@@ -76,6 +87,7 @@ public class ChargeManager {
                             }
 
                             if (shouldWeCharge()) {
+                                inverter.switchOff(loadPreLoader);
                                 if (charging) {
                                     adjustChargers(meanwell);
                                 } else {
