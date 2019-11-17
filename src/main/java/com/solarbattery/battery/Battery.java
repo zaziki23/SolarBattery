@@ -57,7 +57,7 @@ public class Battery {
 
     public int evaluateStatus() {
         long now = System.currentTimeMillis();
-        long tenSecondsAgo = now - TimeUnit.SECONDS.toMillis(10);
+        long tenSecondsAgo = now - TimeUnit.SECONDS.toMillis(5);
         if (lastTime < tenSecondsAgo) {
             byte[] message = hexStringToByteArray("DDA50400FFFC77");
             byte[] first = new byte[1024];
@@ -209,6 +209,9 @@ public class Battery {
 
         for (int i = 0; i < 14; i++) {
             anInt = ((second[4 + (2 * i)] & 0xff) << 8) | (second[5 + (2 * i)] & 0xff);
+            if(anInt == 0.0) {
+                break;
+            }
             cellVoltages.put(i + 1, (anInt / 1000.0));
         }
     }
