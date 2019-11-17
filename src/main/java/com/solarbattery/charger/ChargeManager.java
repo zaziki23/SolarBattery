@@ -73,6 +73,7 @@ public class ChargeManager {
                             }
 
                             if(battery.isLoadable()) {
+                                LOGGER.info("activate LOAD NOW");
                                 inverter.switchOn(loadPreLoader);
                             }
 
@@ -88,6 +89,7 @@ public class ChargeManager {
 
                             if (shouldWeCharge()) {
                                 inverter.switchOff(loadPreLoader);
+                                LOGGER.info("deactivate LOAD NOW");
                                 if (charging) {
                                     adjustChargers(meanwell);
                                 } else {

@@ -14,7 +14,7 @@ import java.util.concurrent.TimeUnit;
 
 public class Battery {
     private Boolean chargeable = true;
-    private Boolean loadable = false;
+    private Boolean loadable = true;
     private Integer numberOfCells;
     private Double voltage;
     private Double current;
@@ -89,6 +89,9 @@ public class Battery {
                     setLoadable(false);
                     LOGGER.info("Cell "+ cellNumber + " reached " + aDouble + "V");
                     return 2;
+                } else {
+                    setChargeable(true);
+                    setLoadable(true);
                 }
             }
             lastTime = System.currentTimeMillis();
