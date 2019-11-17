@@ -98,7 +98,6 @@ public class ChargeManager {
                             }
                             if(!shouldWeCharge) {
                                 if(battery.isLoadable()) {
-                                    LOGGER.info("activate LOAD");
                                     inverter.switchOn(loadPreLoader);
                                 }
                             }

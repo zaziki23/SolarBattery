@@ -2,9 +2,14 @@ package com.solarbattery.load;
 
 import com.pi4j.io.gpio.GpioPinDigitalOutput;
 import com.pi4j.wiringpi.SoftPwm;
+import com.solarbattery.charger.ChargeManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ws.palladian.helper.ThreadHelper;
 
 public class GridInverter {
+    private static final Logger LOGGER = LoggerFactory.getLogger(GridInverter.class);
+
     private final Double OUTPUT_POWER_MAX;
     private Integer pwmPin;
     private Integer powerLevel = 0;
@@ -23,7 +28,20 @@ public class GridInverter {
         }
         on = true;
         pinDigitalOutput.high();
-        ThreadHelper.deepSleep(2000);
+        ThreadHelper.deepSleep(500);
+        LOGGER.info("preLoading active");
+        ThreadHelper.deepSleep(500);
+        LOGGER.info("preLoading active");
+        ThreadHelper.deepSleep(500);
+        LOGGER.info("preLoading active");
+        ThreadHelper.deepSleep(500);
+        LOGGER.info("preLoading active");
+        ThreadHelper.deepSleep(500);
+        LOGGER.info("preLoading active");
+        ThreadHelper.deepSleep(500);
+        LOGGER.info("preLoading active");
+        ThreadHelper.deepSleep(500);
+        LOGGER.info("preLoading active");
         adjustCurrent(10);
         pinDigitalOutput.low();
     }
