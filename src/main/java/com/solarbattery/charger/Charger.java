@@ -33,13 +33,12 @@ public class Charger {
         if(myAcSwitch.isHigh() && myDcSwitch.isLow()){
             return;
         }
+        // switch dc off
+        myDcSwitch.low();
 
+        ThreadHelper.deepSleep(300);
         // switch ac off
         myAcSwitch.high();
-
-        // maybe we should wait for the switch to come off
-        ThreadHelper.deepSleep(250);
-        myDcSwitch.isLow();
     }
 
     public Double getOUTPUT_POWER_MAX() {

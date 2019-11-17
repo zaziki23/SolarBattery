@@ -91,7 +91,7 @@ public class Battery {
                     return 2;
                 }
             }
-            lastTime = now;
+            lastTime = System.currentTimeMillis();
             return 0;
         }
         return 0;
