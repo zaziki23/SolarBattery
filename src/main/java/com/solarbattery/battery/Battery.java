@@ -79,39 +79,42 @@ public class Battery {
                             message = hexStringToByteArray("DDA50300FFFD77");
                             sendMessage(socket, message, second);
 
-                            parseData(first, second);
+                            if(parseData(first, second)) {
 
-                            if (voltage > MAX_VOLTAGE || voltage < MIN_VOLTAGE) {
-                                setChargeable(false);
-                                setLoadable(false);
-                            }
-
-                            for (Integer cellNumber : cellVoltages.keySet()) {
-                                Double aDouble = cellVoltages.get(cellNumber);
-                                if (aDouble > CELL_SHUTDOWN_MAX_VOLTAGE || aDouble < CELL_SHUTDOWN_MIN_VOLTAGE) {
-                                    LOGGER.error(cellVoltages.toString());
-                                    setLoadable(false);
+                                if (voltage > MAX_VOLTAGE || voltage < MIN_VOLTAGE) {
                                     setChargeable(false);
-                                    break;
-                                }
-                                if (aDouble > CELL_MAX_VOLTAGE) {
-                                    // maybe balance issue
-                                    setChargeable(false);
-                                    setLoadable(true);
-                                    LOGGER.info("Cell " + cellNumber + " reached " + aDouble + "V");
-                                    break;
-                                }
-                                if (aDouble < CELL_MIN_VOLTAGE) {
-                                    setChargeable(true);
                                     setLoadable(false);
-                                    LOGGER.info("Cell " + cellNumber + " reached " + aDouble + "V");
-                                    break;
                                 }
-                            }
-                            lastTime = System.currentTimeMillis();
 
-                            setChargeable(true);
-                            setLoadable(true);
+                                for (Integer cellNumber : cellVoltages.keySet()) {
+                                    Double aDouble = cellVoltages.get(cellNumber);
+                                    if (aDouble > CELL_SHUTDOWN_MAX_VOLTAGE || aDouble < CELL_SHUTDOWN_MIN_VOLTAGE) {
+                                        LOGGER.error(cellVoltages.toString());
+                                        setLoadable(false);
+                                        setChargeable(false);
+                                        break;
+                                    }
+                                    if (aDouble > CELL_MAX_VOLTAGE) {
+                                        // maybe balance issue
+                                        setChargeable(false);
+                                        setLoadable(true);
+                                        LOGGER.info("Cell " + cellNumber + " reached " + aDouble + "V");
+                                        break;
+                                    }
+                                    if (aDouble < CELL_MIN_VOLTAGE) {
+                                        setChargeable(true);
+                                        setLoadable(false);
+                                        LOGGER.info("Cell " + cellNumber + " reached " + aDouble + "V");
+                                        break;
+                                    }
+                                }
+                                lastTime = System.currentTimeMillis();
+
+                                setChargeable(true);
+                                setLoadable(true);
+                            } else {
+                                LOGGER.error("BMS message makes no sense");
+                            }
                         }
                     } catch (Throwable t) {
                         t.printStackTrace();
@@ -223,24 +226,29 @@ public class Battery {
         }
     }
 
-    private void parseData(byte[] first, byte[] second) {
+    private boolean parseData(byte[] first, byte[] second) {
 
-        int anInt = ((first[4] & 0xff) << 8) | (first[5] & 0xff);
-        this.setVoltage(anInt / 100.00);
-        anInt = ((first[6] & 0xff) << 8) | (first[7] & 0xff);
-        this.setCurrent(anInt / 100.00);
-        anInt = ((first[16] & 0xff) << 8) | (first[17] & 0xff);
-        this.setBalance(anInt);
-        anInt = first[23];
-        this.setSoC(anInt);
+        double voltage = (((first[4] & 0xff) << 8) | (first[5] & 0xff)) / 100.00;
+        double current = (((first[6] & 0xff) << 8) | (first[7] & 0xff)) / 100.00;
+
+        if(voltage < 36.0 && current > 25.0) {
+            return false;
+        }
+
+        this.setVoltage(voltage);
+        this.setCurrent(current);
+
+        this.setBalance(((first[16] & 0xff) << 8) | (first[17] & 0xff));
+        this.setSoC(first[23]);
 
         for (int i = 0; i < 14; i++) {
-            anInt = ((second[4 + (2 * i)] & 0xff) << 8) | (second[5 + (2 * i)] & 0xff);
+            int anInt = ((second[4 + (2 * i)] & 0xff) << 8) | (second[5 + (2 * i)] & 0xff);
             if (anInt == 0.0) {
                 break;
             }
             cellVoltages.put(i + 1, (anInt / 1000.0));
         }
+        return true;
     }
 
     private void setSoC(int anInt) {
