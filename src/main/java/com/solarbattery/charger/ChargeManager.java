@@ -18,6 +18,7 @@ public class ChargeManager {
     private SolarManager solarManager;
     private Double chargeThreshold = 1500.0;
     private Boolean charging = false;
+    private Boolean inverting = false;
     private long downTime = TimeUnit.SECONDS.toMillis(10);
     private long sleep = TimeUnit.SECONDS.toMillis(1);
     private double surplus = 0.0;
@@ -25,6 +26,7 @@ public class ChargeManager {
     private double loadOffset = 500.0;
     private double adjustOffset = 250.0;
     private boolean stop = false;
+    private int offset = 1;
     private GridInverter inverter = null;
     private PowerMeter inputMeter = null;
     private PowerMeter outputMeter = null;
@@ -79,6 +81,7 @@ public class ChargeManager {
                                         stopCharging();
                                         inverter.switchOff(loadPreLoader);
                                         meanwell.switchAcOff();
+                                        inverting = false;
                                         continue;
                                     }
                                     load = inputMeter.getPower();
@@ -86,6 +89,7 @@ public class ChargeManager {
                                     boolean shouldWeCharge = shouldWeCharge();
                                     if (shouldWeCharge) {
                                         inverter.switchOff(loadPreLoader);
+                                        inverting = false;
                                         LOGGER.info("deactivate LOAD NOW");
                                         if (charging) {
                                             adjustChargers(meanwell);
@@ -98,8 +102,19 @@ public class ChargeManager {
                                         ThreadHelper.deepSleep(downTime);
                                     }
                                     if (!shouldWeCharge) {
-                                        if (battery.isLoadable()) {
+                                        if (loadable && !inverting) {
                                             inverter.switchOn(loadPreLoader);
+                                            inverting = true;
+                                            offset = 1;
+                                        }
+                                        if (inverting) {
+                                            if(inverter.getPowerLevel() < 5) {
+                                                offset = 1;
+                                            }
+                                            if(inverter.getPowerLevel() == 100) {
+                                                offset = -1;
+                                            }
+                                            inverter.adjustCurrent(inverter.getPowerLevel() + 1);
                                         }
                                     }
                                 } catch (Throwable t) {
