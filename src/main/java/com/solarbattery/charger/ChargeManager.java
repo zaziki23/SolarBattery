@@ -64,25 +64,24 @@ public class ChargeManager {
                 try {
                     while (true) {
                         try {
-                            battery.createSocket();
                             while (true) {
                                 try {
-                                    load = inputMeter.getPower();
+                                    ThreadHelper.deepSleep(sleep);
                                     if (stop) {
                                         LOGGER.info("stop was forced, i will shut down");
                                         stopCharging();
                                         return;
                                     }
-
-                                    int batteryStatus = battery.getStatus();
-                                    if (batteryStatus == -1) {
-                                        LOGGER.error("SERIOUS ISSUE HERE - STOP EVERYTHING");
+                                    boolean chargeable = battery.isChargeable();
+                                    boolean loadable = battery.isLoadable();
+                                    if (!loadable && !chargeable) {
+                                        LOGGER.info("battery is not ready");
+                                        stopCharging();
                                         inverter.switchOff(loadPreLoader);
-                                        charging = false;
                                         meanwell.switchAcOff();
-                                        ThreadHelper.deepSleep(downTime);
                                         continue;
                                     }
+                                    load = inputMeter.getPower();
 
                                     boolean shouldWeCharge = shouldWeCharge();
                                     if (shouldWeCharge) {
@@ -103,8 +102,6 @@ public class ChargeManager {
                                             inverter.switchOn(loadPreLoader);
                                         }
                                     }
-
-                                    ThreadHelper.deepSleep(sleep);
                                 } catch (Throwable t) {
                                     t.printStackTrace();
                                 }
@@ -145,7 +142,7 @@ public class ChargeManager {
             enoughPower = true;
         }
 
-        LOGGER.info("powerAvg: " + powerAvg + "W, cP: " + currentPower + "W vs load (with 500W offset): " + (load + loadOffset) + "W -- charge: " + charging + ", enoughPower: " + enoughPower);
+        LOGGER.info("powerAvg: " + powerAvg + "W, cP: " + currentPower + "W vs load : " + (load) + "W -- charge: " + charging + ", enoughPower: " + enoughPower);
         LOGGER.info("Battery: Voltage: " + battery.getVoltage() + "V, current: " + battery.getCurrent() + "A, balance: " + battery.getBalance() + ", cells: " + battery.getCellVoltages() + ", chargeable: " + battery.isChargeable());
         // if we are charging, it is enough to have good power
         if (battery.isChargeable() && charging && enoughPower) {
