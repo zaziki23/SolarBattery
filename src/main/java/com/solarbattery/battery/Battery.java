@@ -67,6 +67,11 @@ public class Battery {
             @Override
             public void run() {
 
+                try {
+                    createSocket();
+                } catch (IOException e) {
+                    System.exit(0);
+                }
                 while (true) {
                     try {
                         long now = System.currentTimeMillis();
