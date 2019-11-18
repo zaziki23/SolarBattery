@@ -114,7 +114,8 @@ public class ChargeManager {
                                             if(inverter.getPowerLevel() == 100) {
                                                 offset = -1;
                                             }
-                                            inverter.adjustCurrent(inverter.getPowerLevel() + 1);
+                                            LOGGER.info("PWM now: " + inverter.getPowerLevel() + offset);
+                                            inverter.adjustCurrent(inverter.getPowerLevel() + offset);
                                         }
                                     }
                                 } catch (Throwable t) {
