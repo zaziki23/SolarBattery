@@ -75,11 +75,11 @@ public class Battery {
                             Byte[] second = new Byte[1024];
 
                             byte[] message = hexStringToByteArray("DDA50400FFFC77");
-                            sendMessage(socket, message, first);
+                            boolean b1 = sendMessage(socket, message, first);
                             message = hexStringToByteArray("DDA50300FFFD77");
-                            sendMessage(socket, message, second);
+                            boolean b = sendMessage(socket, message, second);
 
-                            if () {
+                            if (b && b1) {
 
                                 if (voltage > MAX_VOLTAGE || voltage < MIN_VOLTAGE) {
                                     setChargeable(false);
