@@ -71,8 +71,8 @@ public class Battery {
                         long now = System.currentTimeMillis();
                         long tenSecondsAgo = now - TimeUnit.SECONDS.toMillis(2);
                         if (lastTime < tenSecondsAgo) {
-                            byte[] first = new byte[1024];
-                            byte[] second = new byte[1024];
+                            Byte[] first = new Byte[1024];
+                            Byte[] second = new Byte[1024];
 
                             byte[] message = hexStringToByteArray("DDA50400FFFC77");
                             sendMessage(socket, message, first);
