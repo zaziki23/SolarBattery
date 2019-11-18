@@ -3,7 +3,6 @@ package com.solarbattery.battery;
 import com.solarbattery.charger.ChargeManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ws.palladian.helper.StopWatch;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -48,6 +47,7 @@ public class Battery {
         SHUTDOWN_MIN_VOLTAGE = numberOfCells * CELL_SHUTDOWN_MIN_VOLTAGE;
         voltage = 55.0; // FIXME
         lastTime = 0;
+        evaluateStatus();
     }
 
     public void createSocket() throws IOException {
@@ -55,54 +55,70 @@ public class Battery {
         socket.setSoTimeout(5000);
     }
 
-    public int evaluateStatus() {
-        long now = System.currentTimeMillis();
-        long tenSecondsAgo = now - TimeUnit.SECONDS.toMillis(5);
-        if (lastTime < tenSecondsAgo) {
-            byte[] message = hexStringToByteArray("DDA50400FFFC77");
-            byte[] first = new byte[1024];
-            byte[] second = new byte[1024];
-
-            sendMessage(socket, message, first);
-            message = hexStringToByteArray("DDA50300FFFD77");
-            sendMessage(socket, message, second);
-
-            parseData(first, second);
-
-            if (voltage > MAX_VOLTAGE || voltage < MIN_VOLTAGE) {
-                setChargeable(false);
-                setLoadable(false);
-            }
-
-            for (Integer cellNumber : cellVoltages.keySet()) {
-                Double aDouble = cellVoltages.get(cellNumber);
-                if (aDouble > CELL_SHUTDOWN_MAX_VOLTAGE || aDouble < CELL_SHUTDOWN_MIN_VOLTAGE) {
-                    LOGGER.error(cellVoltages.toString());
-                    setLoadable(false);
-                    setChargeable(false);
-                    return -1; // FIXME
-                }
-                if (aDouble > CELL_MAX_VOLTAGE) {
-                    // maybe balance issue
-                    setChargeable(false);
-                    setLoadable(true);
-                    LOGGER.info("Cell " + cellNumber + " reached " + aDouble + "V");
-                    return 1;
-                }
-                if (aDouble < CELL_MIN_VOLTAGE) {
-                    setChargeable(true);
-                    setLoadable(false);
-                    LOGGER.info("Cell " + cellNumber + " reached " + aDouble + "V");
-                    return 2;
-                }
-            }
-            lastTime = System.currentTimeMillis();
-
-            setChargeable(true);
-            setLoadable(true);
-            return 0;
-        }
+    public int getStatus() {
         return 0;
+    }
+
+
+    public void evaluateStatus() {
+        Thread ct = new Thread("BatteryMonitor") {
+            @Override
+            public void run() {
+
+                while (true) {
+                    try {
+                        long now = System.currentTimeMillis();
+                        long tenSecondsAgo = now - TimeUnit.SECONDS.toMillis(2);
+                        if (lastTime < tenSecondsAgo) {
+                            byte[] first = new byte[1024];
+                            byte[] second = new byte[1024];
+
+                            byte[] message = hexStringToByteArray("DDA50400FFFC77");
+                            sendMessage(socket, message, first);
+                            message = hexStringToByteArray("DDA50300FFFD77");
+                            sendMessage(socket, message, second);
+
+                            parseData(first, second);
+
+                            if (voltage > MAX_VOLTAGE || voltage < MIN_VOLTAGE) {
+                                setChargeable(false);
+                                setLoadable(false);
+                            }
+
+                            for (Integer cellNumber : cellVoltages.keySet()) {
+                                Double aDouble = cellVoltages.get(cellNumber);
+                                if (aDouble > CELL_SHUTDOWN_MAX_VOLTAGE || aDouble < CELL_SHUTDOWN_MIN_VOLTAGE) {
+                                    LOGGER.error(cellVoltages.toString());
+                                    setLoadable(false);
+                                    setChargeable(false);
+                                    break;
+                                }
+                                if (aDouble > CELL_MAX_VOLTAGE) {
+                                    // maybe balance issue
+                                    setChargeable(false);
+                                    setLoadable(true);
+                                    LOGGER.info("Cell " + cellNumber + " reached " + aDouble + "V");
+                                    break;
+                                }
+                                if (aDouble < CELL_MIN_VOLTAGE) {
+                                    setChargeable(true);
+                                    setLoadable(false);
+                                    LOGGER.info("Cell " + cellNumber + " reached " + aDouble + "V");
+                                    break;
+                                }
+                            }
+                            lastTime = System.currentTimeMillis();
+
+                            setChargeable(true);
+                            setLoadable(true);
+                        }
+                    } catch (Throwable t) {
+                        t.printStackTrace();
+                    }
+                }
+            }
+        };
+        ct.start();
     }
 
     public boolean isLoadable() {
@@ -170,6 +186,7 @@ public class Battery {
             InputStream inputStream = socket.getInputStream();
 
             Integer response = 0;
+            String data = "";
             int i = 0;
             try {
                 while (response != -1) {
@@ -179,6 +196,7 @@ public class Battery {
                         break;
                     } else {
                         String hexString = Integer.toHexString(response);
+                        data = data + hexString;
                         if (hexString.equals("77")) {
                             break;
                         }
@@ -186,6 +204,7 @@ public class Battery {
                         i++;
                     }
                 }
+                LOGGER.info("got this from BMS: " + data);
                 // read as much as you want - blocks until timeout elapses
             } catch (java.net.SocketTimeoutException e) {
                 // read timed out - you may throw an exception of your choice
@@ -209,7 +228,7 @@ public class Battery {
 
         for (int i = 0; i < 14; i++) {
             anInt = ((second[4 + (2 * i)] & 0xff) << 8) | (second[5 + (2 * i)] & 0xff);
-            if(anInt == 0.0) {
+            if (anInt == 0.0) {
                 break;
             }
             cellVoltages.put(i + 1, (anInt / 1000.0));

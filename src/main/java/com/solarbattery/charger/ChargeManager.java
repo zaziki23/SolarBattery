@@ -74,7 +74,7 @@ public class ChargeManager {
                                         return;
                                     }
 
-                                    int batteryStatus = battery.evaluateStatus();
+                                    int batteryStatus = battery.getStatus();
                                     if (batteryStatus == -1) {
                                         LOGGER.error("SERIOUS ISSUE HERE - STOP EVERYTHING");
                                         inverter.switchOff(loadPreLoader);
