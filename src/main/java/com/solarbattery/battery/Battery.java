@@ -3,6 +3,7 @@ package com.solarbattery.battery;
 import com.solarbattery.charger.ChargeManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ws.palladian.helper.ThreadHelper;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -69,8 +70,8 @@ public class Battery {
                 while (true) {
                     try {
                         long now = System.currentTimeMillis();
-                        long tenSecondsAgo = now - TimeUnit.SECONDS.toMillis(2);
-                        if (lastTime < tenSecondsAgo) {
+                        long secondsAgo = now - TimeUnit.SECONDS.toMillis(3);
+                        if (lastTime < secondsAgo) {
                             Byte[] first = new Byte[1024];
                             Byte[] second = new Byte[1024];
 
@@ -113,7 +114,7 @@ public class Battery {
                                 setChargeable(true);
                                 setLoadable(true);
                             } else {
-                                LOGGER.error("BMS message makes no sense");
+                                LOGGER.error("BMS message was invalid or just makes no sense");
                             }
                         }
                     } catch (Throwable t) {
@@ -189,8 +190,8 @@ public class Battery {
                 OutputStream outputStream = socket.getOutputStream();
                 outputStream.write(message);
             } catch (SocketException se) {
-                se.printStackTrace();
                 createSocket();
+                ThreadHelper.deepSleep(5000);
                 OutputStream outputStream = socket.getOutputStream();
                 outputStream.write(message);
             }
