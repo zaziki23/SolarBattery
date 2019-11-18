@@ -15,8 +15,8 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 public class Battery {
-    private Boolean chargeable = true;
-    private Boolean loadable = true;
+    private Boolean chargeable = false;
+    private Boolean loadable = false;
     private Integer numberOfCells;
     private Double voltage;
     private Double current;
@@ -55,10 +55,6 @@ public class Battery {
     public void createSocket() throws IOException {
         socket = new Socket("localhost", 9998);
         socket.setSoTimeout(5000);
-    }
-
-    public int getStatus() {
-        return 0;
     }
 
 
