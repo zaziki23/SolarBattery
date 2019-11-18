@@ -79,7 +79,7 @@ public class Battery {
                             message = hexStringToByteArray("DDA50300FFFD77");
                             sendMessage(socket, message, second);
 
-                            if(parseData(first, second)) {
+                            if () {
 
                                 if (voltage > MAX_VOLTAGE || voltage < MIN_VOLTAGE) {
                                     setChargeable(false);
@@ -182,7 +182,8 @@ public class Battery {
         return data;
     }
 
-    private void sendMessage(Socket socket, byte[] message, byte[] first) {
+    private boolean sendMessage(Socket socket, byte[] message, Byte[] first) {
+        boolean returnCode = false;
         try {
             try {
                 OutputStream outputStream = socket.getOutputStream();
@@ -215,7 +216,11 @@ public class Battery {
                         i++;
                     }
                 }
-                LOGGER.info("got this from BMS: " + data);
+                if (data.startsWith("dd30")) {
+                    returnCode = parseData(first, null);
+                } else if (data.startsWith("dd40")) {
+                    returnCode = parseData(null, first);
+                }
                 // read as much as you want - blocks until timeout elapses
             } catch (java.net.SocketTimeoutException e) {
                 // read timed out - you may throw an exception of your choice
@@ -224,30 +229,36 @@ public class Battery {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        return returnCode;
     }
 
-    private boolean parseData(byte[] first, byte[] second) {
+    private boolean parseData(Byte[] first, Byte[] second) {
 
-        double voltage = (((first[4] & 0xff) << 8) | (first[5] & 0xff)) / 100.00;
-        double current = (((first[6] & 0xff) << 8) | (first[7] & 0xff)) / 100.00;
+        if (first != null) {
+            double voltage = (((first[4] & 0xff) << 8) | (first[5] & 0xff)) / 100.00;
+            double current = (((first[6] & 0xff) << 8) | (first[7] & 0xff)) / 100.00;
 
-        if(voltage < 36.0 && current > 25.0) {
-            return false;
-        }
-
-        this.setVoltage(voltage);
-        this.setCurrent(current);
-
-        this.setBalance(((first[16] & 0xff) << 8) | (first[17] & 0xff));
-        this.setSoC(first[23]);
-
-        for (int i = 0; i < 14; i++) {
-            int anInt = ((second[4 + (2 * i)] & 0xff) << 8) | (second[5 + (2 * i)] & 0xff);
-            if (anInt == 0.0) {
-                break;
+            if (voltage < 36.0 && current > 25.0) {
+                return false;
             }
-            cellVoltages.put(i + 1, (anInt / 1000.0));
+
+            this.setVoltage(voltage);
+            this.setCurrent(current);
+
+            this.setBalance(((first[16] & 0xff) << 8) | (first[17] & 0xff));
+            this.setSoC(first[23]);
         }
+
+        if (second != null) {
+            for (int i = 0; i < 14; i++) {
+                int anInt = ((second[4 + (2 * i)] & 0xff) << 8) | (second[5 + (2 * i)] & 0xff);
+                if (anInt == 0.0) {
+                    break;
+                }
+                cellVoltages.put(i + 1, (anInt / 1000.0));
+            }
+        }
+
         return true;
     }
 
