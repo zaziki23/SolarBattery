@@ -51,7 +51,7 @@ public class GridInverter {
         LOGGER.info("preLoading active");
         ThreadHelper.deepSleep(500);
         LOGGER.info("preLoading active");
-        adjustCurrent(10);
+        adjustCurrent(5);
         pinDigitalOutput.low();
     }
 
