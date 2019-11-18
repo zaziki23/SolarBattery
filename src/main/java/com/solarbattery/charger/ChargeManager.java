@@ -105,13 +105,12 @@ public class ChargeManager {
                                         if (loadable && !inverting) {
                                             inverter.switchOn(loadPreLoader);
                                             inverting = true;
-                                            offset = 1;
                                         }
                                         if (inverting) {
                                             if(inverter.getPowerLevel() < 5) {
                                                 offset = 1;
                                             }
-                                            if(inverter.getPowerLevel() == 100) {
+                                            if(inverter.getPowerLevel() > 95) {
                                                 offset = -1;
                                             }
                                             LOGGER.info("PWM now: " + inverter.getPowerLevel() + offset);
