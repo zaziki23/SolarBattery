@@ -11,7 +11,9 @@ public class GridInverter {
     private static final Logger LOGGER = LoggerFactory.getLogger(GridInverter.class);
 
     private final Double OUTPUT_POWER_MAX;
+    private Integer powerLevel = 0;
     private Integer pwmPin;
+
 
     public Integer getPowerLevel() {
         return powerLevel;
@@ -20,8 +22,6 @@ public class GridInverter {
     public void setPowerLevel(Integer powerLevel) {
         this.powerLevel = powerLevel;
     }
-
-    private Integer powerLevel = 0;
     private boolean on = false;
 
     public GridInverter(Double outputPower, int myPWMPin) {
