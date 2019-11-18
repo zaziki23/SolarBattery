@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -178,10 +179,17 @@ public class Battery {
         return data;
     }
 
-    private static void sendMessage(Socket socket, byte[] message, byte[] first) {
+    private void sendMessage(Socket socket, byte[] message, byte[] first) {
         try {
-            OutputStream outputStream = socket.getOutputStream();
-            outputStream.write(message);
+            try {
+                OutputStream outputStream = socket.getOutputStream();
+                outputStream.write(message);
+            } catch (SocketException se) {
+                se.printStackTrace();
+                createSocket();
+                OutputStream outputStream = socket.getOutputStream();
+                outputStream.write(message);
+            }
 
             InputStream inputStream = socket.getInputStream();
 
