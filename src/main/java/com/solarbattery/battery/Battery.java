@@ -11,7 +11,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.net.SocketException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -290,12 +292,25 @@ public class Battery {
         }
 
         if (second != null) {
+            List<Double> values = new ArrayList<>();
             for (int i = 0; i < 14; i++) {
                 int anInt = ((second[4 + (2 * i)] & 0xff) << 8) | (second[5 + (2 * i)] & 0xff);
                 if (anInt == 0.0) {
                     break;
                 }
-                cellVoltages.put(i + 1, (anInt / 1000.0));
+                double value = anInt / 1000.0;
+                values.add(value);
+            }
+
+            int i = 1;
+            for (Double value : values) {
+                if(value > 5.0) {
+                    LOGGER.error("value for cell " + i + " is way to high - data is invalid");
+                    return false;
+                } else {
+                    cellVoltages.put(i, value);
+                }
+                i++;
             }
         }
 
