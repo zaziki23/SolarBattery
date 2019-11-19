@@ -4,6 +4,7 @@ import com.solarbattery.charger.ChargeManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ws.palladian.helper.ThreadHelper;
+import ws.palladian.helper.math.SlimStats;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -36,6 +37,10 @@ public class Battery {
     final private Double SHUTDOWN_MAX_VOLTAGE;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ChargeManager.class);
+
+    public void setCellVoltages(Map<Integer, Double> cellVoltages) {
+        this.cellVoltages = cellVoltages;
+    }
 
     public Battery(Integer numberOfCells) {
         this.numberOfCells = numberOfCells;
@@ -180,6 +185,20 @@ public class Battery {
         return stringBuilder.toString();
     }
 
+    public Integer analyzePowerForCharging(Integer powerlevel) {
+        SlimStats slimStats = new SlimStats();
+        for (Integer integer : cellVoltages.keySet()) {
+            Double aDouble = cellVoltages.get(integer);
+            slimStats.add(aDouble);
+        }
+        double mean = slimStats.getMean();
+        double max = slimStats.getMax();
+        if(max - mean > 0.075) {
+            powerlevel = powerlevel - 5;
+        }
+        return powerlevel;
+    }
+
     public Double getVoltage() {
         return voltage;
     }
@@ -240,7 +259,7 @@ public class Battery {
                     returnCode = parseData(null, first);
                 }
 
-                LOGGER.info("got " + data +" from bms, parsing: " + returnCode);
+                LOGGER.info("got " + data + " from bms, parsing: " + returnCode);
 
                 // read as much as you want - blocks until timeout elapses
             } catch (java.net.SocketTimeoutException e) {

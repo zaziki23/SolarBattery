@@ -92,7 +92,7 @@ public class ChargeManager {
                                         inverting = false;
                                         LOGGER.info("deactivate LOAD NOW");
                                         if (charging) {
-                                            adjustChargers(meanwell);
+                                            adjustChargers(meanwell, battery);
                                         } else {
                                             startCharging();
                                         }
@@ -175,7 +175,7 @@ public class ChargeManager {
         return false;
     }
 
-    private void adjustChargers(AdjustableCharger charger) {
+    private void adjustChargers(AdjustableCharger charger, Battery battery) {
         Double currentPower = solarManager.getCurrentPower();
         if (currentPower > load + loadOffset && charger.getPowerLevel() >= 99) {
             return;
@@ -183,7 +183,12 @@ public class ChargeManager {
         double surplus = (currentPower - load - loadOffset) * 0.75;
 
         Double powerLevel = ((surplus / charger.getOUTPUT_POWER_MAX()) * 100);
-        charger.adjustCurrent(Math.min(100, Math.max(0, powerLevel.intValue())));
+        int calculatedPower = Math.min(100, Math.max(0, powerLevel.intValue()));
+
+        // battery can decrease power if cells are drifting
+        calculatedPower = battery.analyzePowerForCharging(calculatedPower);
+
+        charger.adjustCurrent(calculatedPower);
         if (charger.getPowerLevel() == 100) {
             LOGGER.info("we reached maximum power of charger, now: " + charger.getPowerLevel() + " %");
         } else {
