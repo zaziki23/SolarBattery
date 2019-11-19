@@ -247,10 +247,6 @@ public class Battery {
             double voltage = (((first[4] & 0xff) << 8) | (first[5] & 0xff)) / 100.00;
             double current = (((first[6] & 0xff) << 8) | (first[7] & 0xff)) / 100.00;
 
-            if (voltage < 36.0 && current > 25.0) {
-                return false;
-            }
-
             this.setVoltage(voltage);
             this.setCurrent(current);
 
