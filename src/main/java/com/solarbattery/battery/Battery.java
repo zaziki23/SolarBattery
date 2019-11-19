@@ -81,6 +81,7 @@ public class Battery {
                             message = hexStringToByteArray("DDA50300FFFD77");
                             boolean b = sendMessage(socket, message, second);
 
+                            LOGGER.info("parsing: " + b1 + " and parsing: " + b);
                             if (b && b1) {
 
                                 if (voltage > MAX_VOLTAGE) {
@@ -122,7 +123,7 @@ public class Battery {
                                 }
                                 lastTime = System.currentTimeMillis();
                             } else {
-                                LOGGER.error("BMS message was invalid or just makes no sense");
+                                LOGGER.error("BMS message timed out, was invalid or just makes no sense");
                             }
                         }
                     } catch (Throwable t) {
@@ -236,7 +237,6 @@ public class Battery {
                 // read as much as you want - blocks until timeout elapses
             } catch (java.net.SocketTimeoutException e) {
                 // read timed out - you may throw an exception of your choice
-                LOGGER.info("no response from bms in time");
             }
         } catch (Exception e) {
             e.printStackTrace();
