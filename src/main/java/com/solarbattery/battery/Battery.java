@@ -291,7 +291,7 @@ public class Battery {
             this.setSoC(first[23]);
         }
 
-        if (second != null) {
+        if (second != null && second.length > ((14*2) +5)) {
             List<Double> values = new ArrayList<>();
             for (int i = 0; i < 14; i++) {
                 int anInt = ((second[4 + (2 * i)] & 0xff) << 8) | (second[5 + (2 * i)] & 0xff);
