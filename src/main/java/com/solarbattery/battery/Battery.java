@@ -198,7 +198,7 @@ public class Battery {
         double delta = max - mean;
         Double myPowerLevel = powerlevel.doubleValue();
         if(delta > 0.075) {
-            double offset = (1 + (50*delta));
+            double offset = (1 + (30*delta));
             myPowerLevel = Math.max(1, Math.min(100, powerlevel - offset));
             LOGGER.info("charging power is to high, decreasing power by " + offset);
         }
