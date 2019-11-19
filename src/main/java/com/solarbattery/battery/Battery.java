@@ -94,7 +94,7 @@ public class Battery {
                                     setLoadable(false);
                                     LOGGER.info("Voltage is to low: " + voltage);
                                 }
-
+                                LOGGER.info("CellVoltages: " + cellVoltages.toString());
                                 for (Integer cellNumber : cellVoltages.keySet()) {
                                     Double aDouble = cellVoltages.get(cellNumber);
                                     if (aDouble > CELL_SHUTDOWN_MAX_VOLTAGE) {
