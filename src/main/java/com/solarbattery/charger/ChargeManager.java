@@ -66,6 +66,7 @@ public class ChargeManager {
                 try {
                     while (true) {
                         try {
+                            boolean lastShouldWeCharge = false;
                             while (true) {
                                 try {
                                     ThreadHelper.deepSleep(sleep);
@@ -86,7 +87,7 @@ public class ChargeManager {
                                     }
                                     load = inputMeter.getPower();
 
-                                    boolean shouldWeCharge = shouldWeCharge();
+                                    boolean shouldWeCharge = shouldWeCharge(lastShouldWeCharge);
                                     if (shouldWeCharge) {
                                         inverter.switchOff(loadPreLoader);
                                         inverting = false;
@@ -120,6 +121,7 @@ public class ChargeManager {
 //                                            inverter.adjustCurrent(inverter.getPowerLevel() + offset);
 //                                        }
                                     }
+                                    lastShouldWeCharge = shouldWeCharge;
                                 } catch (Throwable t) {
                                     t.printStackTrace();
                                 }
@@ -150,7 +152,7 @@ public class ChargeManager {
         LOGGER.info("stop charging");
     }
 
-    private boolean shouldWeCharge() {
+    private boolean shouldWeCharge(boolean lastShouldWeCharge) {
         Double powerAvg = solarManager.getPowerAvg();
         Double currentPower = solarManager.getCurrentPower();
         boolean enoughPower = false;
@@ -160,8 +162,8 @@ public class ChargeManager {
             enoughPower = true;
         }
 
-        LOGGER.info("powerAvg: " + powerAvg + "W, cP: " + currentPower + "W vs load : " + (load) + "W -- charge: " + charging + ", enoughPower: " + enoughPower);
-        LOGGER.info("Battery: Voltage: " + battery.getVoltage() + "V, current: " + battery.getCurrent() + "A, balance: " + battery.getBalance() + ", cells: " + battery.getCellVoltages() + ", chargeable: " + battery.isChargeable());
+        LOGGER.info("pAVG:" + powerAvg + "W, cP:" + currentPower + "W, load:" + (load) + "W, c: " + charging + ", V:" + battery.getVoltage()+", A:"+ battery.getCurrent(), ", c:" + battery.isChargeable()+ ", l:"+ battery.isLoadable());
+        LOGGER.info("Eff: " + (battery.getVoltage() * battery.getCurrent() / load) + ", cells: " + battery.getCellVoltages());
         // if we are charging, it is enough to have good power
         if (battery.isChargeable() && charging && enoughPower) {
             return true;
@@ -189,17 +191,15 @@ public class ChargeManager {
         Integer currentPowerLevel = charger.getPowerLevel();
 
         if(calculatedPower - currentPowerLevel > 30) {
-            int calculatedPower1 = currentPowerLevel + 10;
-            LOGGER.info("requested power was: " + calculatedPower + ", changed it to: " + calculatedPower1);
-            calculatedPower = calculatedPower1;
+            calculatedPower = currentPowerLevel + 10;
         }
         // battery can decrease power if cells are drifting
         calculatedPower = battery.analyzePowerForCharging(calculatedPower);
 
         charger.adjustCurrent(calculatedPower);
-        if (charger.getPowerLevel() == 100) {
+        if (charger.getPowerLevel() == 100 && !currentPowerLevel.equals(charger.getPowerLevel())) {
             LOGGER.info("we reached maximum power of charger, now: " + charger.getPowerLevel() + " %");
-        } else {
+        } else if (!currentPowerLevel.equals(charger.getPowerLevel())) {
             LOGGER.info("we changed charging power, now: " + charger.getPowerLevel() + " %");
         }
 
