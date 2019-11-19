@@ -185,14 +185,16 @@ public class ChargeManager {
         Double powerLevel = ((surplus / charger.getOUTPUT_POWER_MAX()) * 100);
         int calculatedPower = Math.min(100, Math.max(0, powerLevel.intValue()));
 
-        // battery can decrease power if cells are drifting
-        calculatedPower = battery.analyzePowerForCharging(calculatedPower);
 
         Integer currentPowerLevel = charger.getPowerLevel();
 
         if(calculatedPower - currentPowerLevel > 30) {
-            calculatedPower = currentPowerLevel + 10;
+            int calculatedPower1 = currentPowerLevel + 10;
+            LOGGER.info("requested power was: " + calculatedPower + ", changed it to: " + calculatedPower1);
+            calculatedPower = calculatedPower1;
         }
+        // battery can decrease power if cells are drifting
+        calculatedPower = battery.analyzePowerForCharging(calculatedPower);
 
         charger.adjustCurrent(calculatedPower);
         if (charger.getPowerLevel() == 100) {

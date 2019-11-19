@@ -193,10 +193,15 @@ public class Battery {
         }
         double mean = slimStats.getMean();
         double max = slimStats.getMax();
-        if(max - mean > 0.075) {
-            powerlevel = powerlevel - 5;
+        double delta = max - mean;
+        Double myPowerLevel = powerlevel.doubleValue();
+        if(delta > 0.075) {
+            double offset = (5 + (100*delta));
+            myPowerLevel = powerlevel - offset;
+            LOGGER.info("charging power is to high, decreasing power by " + offset);
         }
-        return powerlevel;
+
+        return myPowerLevel.intValue();
     }
 
     public Double getVoltage() {
