@@ -81,16 +81,18 @@ public class Battery {
                             message = hexStringToByteArray("DDA50300FFFD77");
                             boolean b = sendMessage(socket, message, second);
 
-                            LOGGER.info("parsing: " + b1 + " and parsing: " + b);
+                            LOGGER.info("parsing: " + b1 + ", " + b + ", V:" + voltage);
                             if (b && b1) {
 
                                 if (voltage > MAX_VOLTAGE) {
                                     setChargeable(false);
                                     setLoadable(true);
+                                    LOGGER.info("Voltage is to high: " + voltage);
                                 }
                                 if (voltage < MIN_VOLTAGE) {
                                     setChargeable(true);
                                     setLoadable(false);
+                                    LOGGER.info("Voltage is to low: " + voltage);
                                 }
 
                                 for (Integer cellNumber : cellVoltages.keySet()) {
