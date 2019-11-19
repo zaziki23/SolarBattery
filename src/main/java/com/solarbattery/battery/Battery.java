@@ -83,14 +83,24 @@ public class Battery {
 
                             if (b && b1) {
 
-                                if (voltage > MAX_VOLTAGE || voltage < MIN_VOLTAGE) {
+                                if (voltage > MAX_VOLTAGE) {
                                     setChargeable(false);
+                                    setLoadable(true);
+                                }
+                                if (voltage < MIN_VOLTAGE) {
+                                    setChargeable(true);
                                     setLoadable(false);
                                 }
 
                                 for (Integer cellNumber : cellVoltages.keySet()) {
                                     Double aDouble = cellVoltages.get(cellNumber);
-                                    if (aDouble > CELL_SHUTDOWN_MAX_VOLTAGE || aDouble < CELL_SHUTDOWN_MIN_VOLTAGE) {
+                                    if (aDouble > CELL_SHUTDOWN_MAX_VOLTAGE) {
+                                        LOGGER.error(cellVoltages.toString());
+                                        setLoadable(false);
+                                        setChargeable(false);
+                                        break;
+                                    }
+                                    if (aDouble < CELL_SHUTDOWN_MIN_VOLTAGE) {
                                         LOGGER.error(cellVoltages.toString());
                                         setLoadable(false);
                                         setChargeable(false);
@@ -111,9 +121,6 @@ public class Battery {
                                     }
                                 }
                                 lastTime = System.currentTimeMillis();
-
-                                setChargeable(true);
-                                setLoadable(true);
                             } else {
                                 LOGGER.error("BMS message was invalid or just makes no sense");
                             }

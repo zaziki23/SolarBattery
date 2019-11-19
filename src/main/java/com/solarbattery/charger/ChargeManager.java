@@ -102,23 +102,23 @@ public class ChargeManager {
                                         ThreadHelper.deepSleep(downTime);
                                     }
                                     if (!shouldWeCharge) {
-                                        if (loadable && !inverting) {
-                                            inverter.switchOn(loadPreLoader);
-                                            LOGGER.info("start to invert power");
-                                            inverting = true;
-                                        }
-                                        if (inverting) {
-                                            if (inverter.getPowerLevel() < 5) {
-                                                LOGGER.info("more invert power now");
-                                                offset = 1;
-                                            }
-                                            if (inverter.getPowerLevel() > 95) {
-                                                LOGGER.info("less power now");
-                                                offset = -1;
-                                            }
-                                            LOGGER.info("PWM now: " + inverter.getPowerLevel() + ", offset: " + offset);
-                                            inverter.adjustCurrent(inverter.getPowerLevel() + offset);
-                                        }
+//                                        if (loadable && !inverting) {
+//                                            inverter.switchOn(loadPreLoader);
+//                                            LOGGER.info("start to invert power");
+//                                            inverting = true;
+//                                        }
+//                                        if (inverting) {
+//                                            if (inverter.getPowerLevel() < 5) {
+//                                                LOGGER.info("more invert power now");
+//                                                offset = 1;
+//                                            }
+//                                            if (inverter.getPowerLevel() > 95) {
+//                                                LOGGER.info("less power now");
+//                                                offset = -1;
+//                                            }
+//                                            LOGGER.info("PWM now: " + inverter.getPowerLevel() + ", offset: " + offset);
+//                                            inverter.adjustCurrent(inverter.getPowerLevel() + offset);
+//                                        }
                                     }
                                 } catch (Throwable t) {
                                     t.printStackTrace();
