@@ -103,7 +103,7 @@ public class Battery {
                                     if (aDouble < CELL_SHUTDOWN_MIN_VOLTAGE) {
                                         LOGGER.error(cellVoltages.toString());
                                         setLoadable(false);
-                                        setChargeable(false);
+                                        setChargeable(true);
                                         break;
                                     }
                                     if (aDouble > CELL_MAX_VOLTAGE) {
