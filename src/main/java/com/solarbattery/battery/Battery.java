@@ -88,11 +88,13 @@ public class Battery {
                                     setChargeable(false);
                                     setLoadable(true);
                                     LOGGER.info("Voltage is to high: " + voltage);
+                                    continue;
                                 }
                                 if (voltage < MIN_VOLTAGE) {
                                     setChargeable(true);
                                     setLoadable(false);
                                     LOGGER.info("Voltage is to low: " + voltage);
+                                    continue;
                                 }
                                 LOGGER.info("CellVoltages: " + cellVoltages.toString());
                                 for (Integer cellNumber : cellVoltages.keySet()) {
@@ -101,28 +103,32 @@ public class Battery {
                                         LOGGER.error(cellVoltages.toString());
                                         setLoadable(false);
                                         setChargeable(false);
-                                        break;
+                                        return;
                                     }
                                     if (aDouble < CELL_SHUTDOWN_MIN_VOLTAGE) {
                                         LOGGER.error(cellVoltages.toString());
                                         setLoadable(false);
                                         setChargeable(true);
-                                        break;
+                                        return;
                                     }
                                     if (aDouble > CELL_MAX_VOLTAGE) {
                                         // maybe balance issue
+                                        LOGGER.error(cellVoltages.toString());
                                         setChargeable(false);
                                         setLoadable(true);
                                         LOGGER.info("Cell " + cellNumber + " reached " + aDouble + "V");
-                                        break;
+                                        return;
                                     }
                                     if (aDouble < CELL_MIN_VOLTAGE) {
+                                        LOGGER.error(cellVoltages.toString());
                                         setChargeable(true);
                                         setLoadable(false);
                                         LOGGER.info("Cell " + cellNumber + " reached " + aDouble + "V");
-                                        break;
+                                        return;
                                     }
                                 }
+                                setChargeable(true);
+                                setLoadable(true);
                                 lastTime = System.currentTimeMillis();
                             } else {
                                 LOGGER.error("BMS message timed out, was invalid or just makes no sense");
