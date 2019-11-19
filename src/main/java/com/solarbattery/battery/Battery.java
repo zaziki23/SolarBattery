@@ -230,6 +230,9 @@ public class Battery {
                 } else if (data.startsWith("dd40")) {
                     returnCode = parseData(null, first);
                 }
+
+                LOGGER.info("got " + data +" from bms, parsing: " + returnCode);
+
                 // read as much as you want - blocks until timeout elapses
             } catch (java.net.SocketTimeoutException e) {
                 // read timed out - you may throw an exception of your choice
