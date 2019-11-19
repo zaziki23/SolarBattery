@@ -23,7 +23,7 @@ public class ChargeManager {
     private long sleep = TimeUnit.SECONDS.toMillis(1);
     private double surplus = 0.0;
     private double load = 0.0;
-    private double loadOffset = 500.0;
+    private double loadOffset = 200.0;
     private double adjustOffset = 250.0;
     private boolean stop = false;
     private int offset = 1;
