@@ -78,7 +78,7 @@ public class Battery {
                 while (true) {
                     try {
                         long now = System.currentTimeMillis();
-                        long secondsAgo = now - TimeUnit.SECONDS.toMillis(3);
+                        long secondsAgo = now - TimeUnit.SECONDS.toMillis(1);
                         if (lastTime < secondsAgo) {
                             Byte[] first = new Byte[1024];
                             Byte[] second = new Byte[1024];

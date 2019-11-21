@@ -12,7 +12,7 @@ public class AdjustableCharger extends Charger {
     AdjustableCharger(Double outputPower, Double outputVoltage, GpioPinDigitalOutput myAcSwitch, GpioPinDigitalOutput myDcSwitch, Integer pinNumber) {
         super(outputPower, outputVoltage, myAcSwitch, myDcSwitch);
         pwmPin = pinNumber;
-        SoftPwm.softPwmCreate(pinNumber, 0, 70);
+        SoftPwm.softPwmCreate(pinNumber, 0, 100);
         powerLevel = 0;
         this.outputPower = 0.0;
     }

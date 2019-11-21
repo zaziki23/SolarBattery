@@ -21,7 +21,7 @@ public class PowerMeter {
 
         try {
             DocumentRetriever documentRetriever = new DocumentRetriever();
-            documentRetriever.getHttpRetriever().setConnectionTimeout(1000);
+            documentRetriever.getHttpRetriever().setConnectionTimeout(500);
             JsonObject jsonObject = documentRetriever.tryGetJsonObject(url + "/status");
             JsonArray meters = jsonObject.tryGetJsonArray("meters");
             JsonObject firstMeter = meters.tryGetJsonObject(0);
