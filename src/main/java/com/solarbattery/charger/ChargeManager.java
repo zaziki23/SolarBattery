@@ -32,7 +32,7 @@ public class ChargeManager {
     private PowerMeter outputMeter = null;
 
     final Integer pwmPinCharger = 28;
-    final Integer pwmInverter = 25;
+    final Integer pwmInverterLoad = 24;
     final GpioController gpio = GpioFactory.getInstance();
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ChargeManager.class);
@@ -41,6 +41,7 @@ public class ChargeManager {
     private final GpioPinDigitalOutput acMeanwell = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_27, "AC Meanwell", PinState.HIGH);
     private final GpioPinDigitalOutput dcMeanwell = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_29, "DC Meanwell", PinState.LOW);
     private final GpioPinDigitalOutput loadPreLoader = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_07, "LOAD PreLoader", PinState.LOW);
+    private final GpioPinDigitalOutput dcInverter = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_25, "LOAD PreLoader", PinState.LOW);
 //    final GpioPinDigitalOutput meanwellSwitch = null;
 
     private static ChargeManager INSTANCE = new ChargeManager();
@@ -52,7 +53,7 @@ public class ChargeManager {
 
     public ChargeManager() {
         loadPreLoader.low();
-        inverter = new GridInverter(600.0, pwmInverter);
+        inverter = new GridInverter(600.0, pwmInverterLoad, dcInverter);
         battery = new Battery(14);
         meanwell = new AdjustableCharger(750.0, 57.0, acMeanwell, dcMeanwell, pwmPinCharger);
         solarManager = new SolarManager();
@@ -103,23 +104,23 @@ public class ChargeManager {
                                         ThreadHelper.deepSleep(downTime);
                                     }
                                     if (!shouldWeCharge) {
-//                                        if (loadable && !inverting) {
-//                                            inverter.switchOn(loadPreLoader);
-//                                            LOGGER.info("start to invert power");
-//                                            inverting = true;
-//                                        }
-//                                        if (inverting) {
-//                                            if (inverter.getPowerLevel() < 5) {
-//                                                LOGGER.info("more invert power now");
-//                                                offset = 1;
-//                                            }
-//                                            if (inverter.getPowerLevel() > 95) {
-//                                                LOGGER.info("less power now");
-//                                                offset = -1;
-//                                            }
-//                                            LOGGER.info("PWM now: " + inverter.getPowerLevel() + ", offset: " + offset);
-//                                            inverter.adjustCurrent(inverter.getPowerLevel() + offset);
-//                                        }
+                                        if (loadable && !inverting) {
+                                            inverter.switchOn(loadPreLoader);
+                                            LOGGER.info("start to invert power");
+                                            inverting = true;
+                                        }
+                                        if (inverting) {
+                                            if (inverter.getPowerLevel() < 5) {
+                                                LOGGER.info("more invert power now");
+                                                offset = 1;
+                                            }
+                                            if (inverter.getPowerLevel() > 80) {
+                                                LOGGER.info("less power now");
+                                                offset = -1;
+                                            }
+                                            LOGGER.info("PWM now: " + inverter.getPowerLevel() + ", offset: " + offset);
+                                            inverter.adjustCurrent(inverter.getPowerLevel() + offset);
+                                        }
                                     }
                                     lastShouldWeCharge = shouldWeCharge;
                                 } catch (Throwable t) {
