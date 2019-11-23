@@ -13,7 +13,6 @@ public class GridInverter {
     private final Double OUTPUT_POWER_MAX;
     private Integer powerLevel = 0;
     private Integer pwmPin;
-    private GpioPinDigitalOutput dcSwitch;
 
 
     public Integer getPowerLevel() {
@@ -25,12 +24,11 @@ public class GridInverter {
     }
     private boolean on = false;
 
-    public GridInverter(Double outputPower, int myPWMPin, GpioPinDigitalOutput pinDigitalOutput) {
+    public GridInverter(Double outputPower, int myPWMPin) {
         this.OUTPUT_POWER_MAX = outputPower;
         this.pwmPin = myPWMPin;
         SoftPwm.softPwmCreate(pwmPin, 0, 100);
         on = false;
-        dcSwitch = pinDigitalOutput;
     }
 
     public void switchOn(GpioPinDigitalOutput pinDigitalOutput) {
@@ -41,26 +39,24 @@ public class GridInverter {
         pinDigitalOutput.high();
         ThreadHelper.deepSleep(500);
         LOGGER.info("preLoading active");
-        ThreadHelper.deepSleep(700);
+        ThreadHelper.deepSleep(500);
         LOGGER.info("preLoading active");
-        ThreadHelper.deepSleep(700);
+        ThreadHelper.deepSleep(500);
         LOGGER.info("preLoading active");
-        ThreadHelper.deepSleep(700);
+        ThreadHelper.deepSleep(500);
         LOGGER.info("preLoading active");
-        ThreadHelper.deepSleep(700);
+        ThreadHelper.deepSleep(500);
         LOGGER.info("preLoading active");
-        dcSwitch.high();
-        ThreadHelper.deepSleep(700);
+        ThreadHelper.deepSleep(500);
         LOGGER.info("preLoading active");
-        ThreadHelper.deepSleep(700);
+        ThreadHelper.deepSleep(500);
         LOGGER.info("preLoading active");
+        adjustCurrent(5);
         pinDigitalOutput.low();
-        adjustCurrent(1);
     }
 
     public void switchOff(GpioPinDigitalOutput pinDigitalOutput) {
         pinDigitalOutput.low();
-        dcSwitch.low();
         adjustCurrent(0);
     }
 
