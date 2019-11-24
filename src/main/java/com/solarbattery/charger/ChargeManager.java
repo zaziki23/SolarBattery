@@ -194,7 +194,7 @@ public class ChargeManager {
             calculatedPower = currentPowerLevel + 10;
         }
         // battery can decrease power if cells are drifting
-        calculatedPower = battery.analyzePowerForCharging(calculatedPower);
+        calculatedPower = battery.analyzePowerForCharging(currentPowerLevel, calculatedPower);
 
         charger.adjustCurrent(calculatedPower);
         if (charger.getPowerLevel() == 100 && !currentPowerLevel.equals(charger.getPowerLevel())) {
