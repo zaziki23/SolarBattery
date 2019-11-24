@@ -196,10 +196,10 @@ public class Battery {
         double min = slimStats.getMin();
         double max = Math.min(CELL_SHUTDOWN_MAX_VOLTAGE, slimStats.getMax());
         double delta = max - min;
-        int multiplier = 60;
+        int multiplier = 40;
         Double myPowerLevel = powerlevel.doubleValue();
-        if(delta > 0.075 && powerlevel > 15) {
-            if(delta > 0.15) {
+        if(delta > 0.075) {
+            if(delta > 0.17) {
                 multiplier = 300;
             }
             double offset = (1 + (multiplier*delta));
