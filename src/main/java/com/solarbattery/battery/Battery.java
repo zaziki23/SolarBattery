@@ -193,9 +193,9 @@ public class Battery {
             Double aDouble = cellVoltages.get(integer);
             slimStats.add(aDouble);
         }
-        double mean = slimStats.getMean();
+        double min = slimStats.getMin();
         double max = Math.min(CELL_SHUTDOWN_MAX_VOLTAGE, slimStats.getMax());
-        double delta = max - mean;
+        double delta = max - min;
         int multiplier = 60;
         Double myPowerLevel = powerlevel.doubleValue();
         if(delta > 0.075 && powerlevel > 15) {
