@@ -203,10 +203,10 @@ public class Battery {
                 multiplier = 300;
             }
             double offset = (1 + (multiplier*delta));
-            myPowerLevel = Math.max(1, Math.min(100, powerlevel - offset));
+            myPowerLevel = Math.max(2, Math.min(100, powerlevel - offset));
             if(oldPowerLevel <= 2 && powerlevel > 30 && myPowerLevel <= 2) {
                 // We are the reason why power is so low - lets try to increase it a little bit
-                myPowerLevel = myPowerLevel +2;
+                myPowerLevel = myPowerLevel +3;
             }
             LOGGER.info("charging power is to high, decreasing power by " + offset);
         }
