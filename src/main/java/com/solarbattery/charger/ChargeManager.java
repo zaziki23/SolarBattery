@@ -89,7 +89,7 @@ public class ChargeManager {
 
                                     boolean shouldWeCharge = shouldWeCharge(lastShouldWeCharge);
                                     if (shouldWeCharge) {
-                                        if(inverting) {
+                                        if (inverting) {
                                             LOGGER.info("LOAD off");
                                             inverter.switchOff(loadPreLoader);
                                             inverting = false;
@@ -105,22 +105,29 @@ public class ChargeManager {
                                         ThreadHelper.deepSleep(downTime);
                                     }
                                     if (!shouldWeCharge) {
-                                        if (loadable && !inverting) {
-                                            inverter.switchOn(loadPreLoader);
-                                            LOGGER.info("start to invert power");
-                                            inverting = true;
-                                        }
-                                        if (inverting) {
-                                            if (inverter.getPowerLevel() < 5) {
-                                                LOGGER.info("more invert power now");
-                                                offset = 1;
+                                        boolean shouldWeInvert = shouldWeInvert();
+                                        if (shouldWeInvert) {
+                                            if (loadable && !inverting) {
+                                                inverter.switchOn(loadPreLoader);
+                                                LOGGER.info("start to invert power");
+                                                inverting = true;
                                             }
-                                            if (inverter.getPowerLevel() > 95) {
-                                                LOGGER.info("less power now");
-                                                offset = -1;
+                                            if (inverting) {
+                                                if (inverter.getPowerLevel() < 5) {
+                                                    LOGGER.info("more invert power now");
+                                                    offset = 1;
+                                                }
+                                                if (inverter.getPowerLevel() > 95) {
+                                                    LOGGER.info("less power now");
+                                                    offset = -1;
+                                                }
+                                                LOGGER.info("PWM now: " + inverter.getPowerLevel() + ", offset: " + offset);
+                                                inverter.adjustCurrent(inverter.getPowerLevel() + offset);
                                             }
-                                            LOGGER.info("PWM now: " + inverter.getPowerLevel() + ", offset: " + offset);
-                                            inverter.adjustCurrent(inverter.getPowerLevel() + offset);
+                                        } else if (inverting) {
+                                            LOGGER.info("LOAD off");
+                                            inverter.switchOff(loadPreLoader);
+                                            inverting = false;
                                         }
                                     }
                                     lastShouldWeCharge = shouldWeCharge;
@@ -140,6 +147,7 @@ public class ChargeManager {
         ct.start();
     }
 
+
     private void startCharging() {
         meanwell.swichAcOn();
         meanwell.adjustCurrent(0);
@@ -154,6 +162,17 @@ public class ChargeManager {
         LOGGER.info("stop charging");
     }
 
+    public boolean shouldWeInvert() {
+        Double powerAvg = solarManager.getPowerAvg();
+
+        if (powerAvg <= 0.1) {
+            if (battery.isLoadable()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private boolean shouldWeCharge(boolean lastShouldWeCharge) {
         Double powerAvg = solarManager.getPowerAvg();
         Double currentPower = solarManager.getCurrentPower();
@@ -164,7 +183,7 @@ public class ChargeManager {
             enoughPower = true;
         }
 
-        LOGGER.info("pAVG:" + powerAvg + "W, cP:" + currentPower + "W, load:" + (load) + "W, c: " + charging + ", V:" + battery.getVoltage()+", A:"+ battery.getCurrent(), ", c:" + battery.isChargeable()+ ", l:"+ battery.isLoadable());
+        LOGGER.info("pAVG:" + powerAvg + "W, cP:" + currentPower + "W, load:" + (load) + "W, c: " + charging + ", V:" + battery.getVoltage() + ", A:" + battery.getCurrent(), ", c:" + battery.isChargeable() + ", l:" + battery.isLoadable());
         LOGGER.info("Eff: " + (battery.getVoltage() * battery.getCurrent() / load) + ", cells: " + battery.getCellVoltages());
         // if we are charging, it is enough to have good power
         if (battery.isChargeable() && charging && enoughPower) {
@@ -192,7 +211,7 @@ public class ChargeManager {
 
         Integer currentPowerLevel = charger.getPowerLevel();
 
-        if(calculatedPower - currentPowerLevel > 30) {
+        if (calculatedPower - currentPowerLevel > 30) {
             calculatedPower = currentPowerLevel + 10;
         }
         // battery can decrease power if cells are drifting
