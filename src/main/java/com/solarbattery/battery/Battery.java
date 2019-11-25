@@ -78,7 +78,7 @@ public class Battery {
                 while (true) {
                     try {
                         long now = System.currentTimeMillis();
-                        long secondsAgo = now - TimeUnit.SECONDS.toMillis(1);
+                        long secondsAgo = now - TimeUnit.SECONDS.toMillis(2);
                         if (lastTime < secondsAgo) {
                             Byte[] first = new Byte[1024];
                             Byte[] second = new Byte[1024];
@@ -88,7 +88,6 @@ public class Battery {
                             message = hexStringToByteArray("DDA50300FFFD77");
                             boolean b = sendMessage(socket, message, second);
 
-                            LOGGER.info("parsing: " + b1 + ", " + b + ", V:" + voltage);
                             if (b && b1) {
 
                                 if (voltage > MAX_VOLTAGE) {
@@ -100,22 +99,23 @@ public class Battery {
                                 if (voltage < MIN_VOLTAGE) {
                                     setChargeable(true);
                                     setLoadable(false);
-                                    LOGGER.info("Voltage is to low: " + voltage);
+                                    LOGGER.error("Voltage is to low: " + voltage);
                                     continue;
                                 }
-                                LOGGER.info("CellVoltages: " + cellVoltages.toString());
                                 for (Integer cellNumber : cellVoltages.keySet()) {
                                     Double aDouble = cellVoltages.get(cellNumber);
                                     if (aDouble > CELL_SHUTDOWN_MAX_VOLTAGE) {
                                         LOGGER.error(cellVoltages.toString());
                                         setLoadable(false);
                                         setChargeable(false);
+                                        LOGGER.error("Cell " + cellNumber + " reached " + aDouble + "V");
                                         return;
                                     }
                                     if (aDouble < CELL_SHUTDOWN_MIN_VOLTAGE) {
                                         LOGGER.error(cellVoltages.toString());
                                         setLoadable(false);
                                         setChargeable(true);
+                                        LOGGER.error("Cell " + cellNumber + " reached " + aDouble + "V");
                                         return;
                                     }
                                     if (aDouble > CELL_MAX_VOLTAGE) {
@@ -137,12 +137,12 @@ public class Battery {
                                 setChargeable(true);
                                 setLoadable(true);
                                 lastTime = System.currentTimeMillis();
-                            } else {
-                                LOGGER.error("BMS message timed out, was invalid or just makes no sense");
                             }
                         }
+                        ThreadHelper.deepSleep(500);
                     } catch (Throwable t) {
                         t.printStackTrace();
+                        ThreadHelper.deepSleep(500);
                     }
                 }
             }
