@@ -203,8 +203,8 @@ public class Battery {
                 myPowerLevel = myPowerLevel +3;
             }
             DecimalFormat formatter = new DecimalFormat("#.##");
-            if(lastOffset != offset) {
-                LOGGER.info("cells are drifting delta is: " + delta + "V, decreasing power by " + formatter.format(offset));
+            if(!lastOffset.equals(offset)) {
+                LOGGER.info("cells are drifting delta is: " + formatter.format(delta) + "V, decreasing power by " + formatter.format(offset));
             }
             lastOffset = offset;
         }
