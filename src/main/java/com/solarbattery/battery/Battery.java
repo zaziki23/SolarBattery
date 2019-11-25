@@ -195,15 +195,15 @@ public class Battery {
         double delta = max - min;
         int multiplier = 50;
         Double myPowerLevel = powerlevel.doubleValue();
-        if(delta > 0.075) {
-            Double offset = (1 + (multiplier*delta));
+        if (delta > 0.075) {
+            Double offset = (1 + (multiplier * delta));
             myPowerLevel = Math.max(2, Math.min(100, powerlevel - offset));
-            if(oldPowerLevel <= 2 && powerlevel > 30 && myPowerLevel <= 2) {
+            if (oldPowerLevel <= 2 && powerlevel > 30 && myPowerLevel <= 2) {
                 // We are the reason why power is so low - lets try to increase it a little bit
-                myPowerLevel = myPowerLevel +3;
+                myPowerLevel = myPowerLevel + 3;
             }
             DecimalFormat formatter = new DecimalFormat("#.##");
-            if(!lastOffset.equals(offset)) {
+            if (!lastOffset.equals(offset)) {
                 LOGGER.info("cells are drifting delta is: " + formatter.format(delta) + "V, decreasing power by " + formatter.format(offset));
             }
             lastOffset = offset;
@@ -295,20 +295,27 @@ public class Battery {
             this.setSoC(first[23]);
         }
 
-        if (second != null && second.length > ((14*2) +5)) {
+        if (second != null && (second.length > ((13 * 2) + 5))) {
             List<Double> values = new ArrayList<>();
             for (int i = 0; i < 14; i++) {
-                int anInt = ((second[4 + (2 * i)] & 0xff) << 8) | (second[5 + (2 * i)] & 0xff);
-                if (anInt == 0.0) {
-                    break;
+                Byte aByte = second[4 + (2 * i)];
+                Byte anotherByte = second[5 + (2 * i)];
+                if (aByte != null && anotherByte != null) {
+                    int anInt = ((aByte & 0xff) << 8) | (anotherByte & 0xff);
+                    if (anInt == 0.0) {
+                        break;
+                    }
+                    double value = anInt / 1000.0;
+                    values.add(value);
+                } else {
+                    LOGGER.error("data from bms was invalid: " + second);
+                    return false;
                 }
-                double value = anInt / 1000.0;
-                values.add(value);
             }
 
             int i = 1;
             for (Double value : values) {
-                if(value > 5.0) {
+                if (value > 5.0) {
                     LOGGER.error("value for cell " + i + " is way to high - data is invalid");
                     return false;
                 } else {
