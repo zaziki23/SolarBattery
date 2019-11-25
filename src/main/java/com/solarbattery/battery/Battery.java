@@ -187,19 +187,27 @@ public class Battery {
         return stringBuilder.toString();
     }
 
-    public Integer analyzePowerForCharging(Integer powerlevel) {
+    public Integer analyzePowerForCharging(Integer oldPowerLevel, Integer powerlevel) {
         SlimStats slimStats = new SlimStats();
         for (Integer integer : cellVoltages.keySet()) {
             Double aDouble = cellVoltages.get(integer);
             slimStats.add(aDouble);
         }
-        double mean = slimStats.getMean();
+        double min = slimStats.getMin();
         double max = Math.min(CELL_SHUTDOWN_MAX_VOLTAGE, slimStats.getMax());
-        double delta = max - mean;
+        double delta = max - min;
+        int multiplier = 40;
         Double myPowerLevel = powerlevel.doubleValue();
-        if(delta > 0.075 && powerlevel > 15) {
-            double offset = (1 + (30*delta));
-            myPowerLevel = Math.max(1, Math.min(100, powerlevel - offset));
+        if(delta > 0.075) {
+            if(delta > 0.17) {
+                multiplier = 300;
+            }
+            double offset = (1 + (multiplier*delta));
+            myPowerLevel = Math.max(2, Math.min(100, powerlevel - offset));
+            if(oldPowerLevel <= 2 && powerlevel > 30 && myPowerLevel <= 2) {
+                // We are the reason why power is so low - lets try to increase it a little bit
+                myPowerLevel = myPowerLevel +3;
+            }
             LOGGER.info("charging power is to high, decreasing power by " + offset);
         }
 
