@@ -89,9 +89,11 @@ public class ChargeManager {
 
                                     boolean shouldWeCharge = shouldWeCharge(lastShouldWeCharge);
                                     if (shouldWeCharge) {
-                                        inverter.switchOff(loadPreLoader);
-                                        inverting = false;
-                                        LOGGER.info("deactivate LOAD NOW");
+                                        if(inverting) {
+                                            LOGGER.info("LOAD off");
+                                            inverter.switchOff(loadPreLoader);
+                                            inverting = false;
+                                        }
                                         if (charging) {
                                             adjustChargers(meanwell, battery);
                                         } else {

@@ -154,10 +154,8 @@ public class Battery {
     }
 
     public void setLoadable(boolean loadable) {
-        if (!loadable) {
-            LOGGER.info("battery is not ready for load");
-        } else {
-            LOGGER.info("battery is ready for load");
+        if (this.loadable != loadable) {
+            LOGGER.info("battery loadable: " + loadable);
         }
         this.loadable = loadable;
     }
@@ -169,11 +167,8 @@ public class Battery {
 
     public void setChargeable(boolean chargeable) {
 
-        if (this.chargeable && !chargeable) {
-            LOGGER.info("battery is not ready for charge");
-        }
-        if (!this.chargeable && chargeable) {
-            LOGGER.info("battery is ready for charge");
+        if (this.chargeable != chargeable) {
+            LOGGER.info("battery chargeable: " + chargeable);
         }
         this.chargeable = chargeable;
     }
@@ -195,19 +190,16 @@ public class Battery {
         double min = slimStats.getMin();
         double max = Math.min(CELL_SHUTDOWN_MAX_VOLTAGE, slimStats.getMax());
         double delta = max - min;
-        int multiplier = 40;
+        int multiplier = 50;
         Double myPowerLevel = powerlevel.doubleValue();
         if(delta > 0.075) {
-            if(delta > 0.17) {
-                multiplier = 300;
-            }
             double offset = (1 + (multiplier*delta));
             myPowerLevel = Math.max(2, Math.min(100, powerlevel - offset));
             if(oldPowerLevel <= 2 && powerlevel > 30 && myPowerLevel <= 2) {
                 // We are the reason why power is so low - lets try to increase it a little bit
                 myPowerLevel = myPowerLevel +3;
             }
-            LOGGER.info("charging power is to high, decreasing power by " + offset);
+            LOGGER.info("cells are drifting, decreasing power by " + offset);
         }
 
         return myPowerLevel.intValue();
