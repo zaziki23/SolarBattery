@@ -10,6 +10,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.net.SocketException;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -27,6 +28,7 @@ public class Battery {
     private Map<Integer, Double> cellVoltages;
     private Socket socket;
     private long lastTime;
+    private Double lastOffset;
 
     final private Double CELL_SHUTDOWN_MAX_VOLTAGE = 4.20; // FIXME
     final private Double CELL_SHUTDOWN_MIN_VOLTAGE = 2.85; // FIXME
@@ -45,6 +47,7 @@ public class Battery {
 
     public Battery(Integer numberOfCells) {
         this.numberOfCells = numberOfCells;
+        lastOffset = 0.0;
         cellVoltages = new HashMap<>();
         for (int i = 0; i < numberOfCells; i++) {
             cellVoltages.put(i + 1, 3.7);
@@ -193,13 +196,17 @@ public class Battery {
         int multiplier = 50;
         Double myPowerLevel = powerlevel.doubleValue();
         if(delta > 0.075) {
-            double offset = (1 + (multiplier*delta));
+            Double offset = (1 + (multiplier*delta));
             myPowerLevel = Math.max(2, Math.min(100, powerlevel - offset));
             if(oldPowerLevel <= 2 && powerlevel > 30 && myPowerLevel <= 2) {
                 // We are the reason why power is so low - lets try to increase it a little bit
                 myPowerLevel = myPowerLevel +3;
             }
-            LOGGER.info("cells are drifting, decreasing power by " + offset);
+            DecimalFormat formatter = new DecimalFormat("#.##");
+            if(lastOffset != offset) {
+                LOGGER.info("cells are drifting delta is: " + delta + "V, decreasing power by " + formatter.format(offset));
+            }
+            lastOffset = offset;
         }
 
         return myPowerLevel.intValue();
