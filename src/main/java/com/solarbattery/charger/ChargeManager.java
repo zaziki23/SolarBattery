@@ -35,7 +35,7 @@ public class ChargeManager {
     final Integer pwmInverter = 25;
     final GpioController gpio = GpioFactory.getInstance();
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ChargeManager.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ChargeManager.class.getName());
 
     // not that we need to use HIGH to pull the switch to switch off actually
     private final GpioPinDigitalOutput acMeanwell = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_27, "AC Meanwell", PinState.HIGH);

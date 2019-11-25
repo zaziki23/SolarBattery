@@ -1,6 +1,5 @@
 package com.solarbattery.battery;
 
-import com.solarbattery.charger.ChargeManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ws.palladian.helper.ThreadHelper;
@@ -38,7 +37,7 @@ public class Battery {
     final private Double SHUTDOWN_MIN_VOLTAGE;
     final private Double SHUTDOWN_MAX_VOLTAGE;
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ChargeManager.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(Battery.class.getName());
 
     public void setCellVoltages(Map<Integer, Double> cellVoltages) {
         this.cellVoltages = cellVoltages;

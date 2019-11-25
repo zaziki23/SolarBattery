@@ -1,8 +1,7 @@
 package com.solarbattery;
 
 import com.solarbattery.charger.ChargeManager;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -27,9 +26,7 @@ public class Example {
 
     public static void main(String[] args) {
 
-        Logger logger = LoggerFactory.getLogger(ChargeManager.class.toString());
-        logger.info("blalba");
-// SpringApplication.run(Example.class, args);
+         SpringApplication.run(Example.class, args);
     }
 
 }
