@@ -113,14 +113,15 @@ public class ChargeManager {
                                                 inverting = true;
                                             }
                                             if (inverting) {
-                                                if (inverter.getPowerLevel() < 5) {
+                                                if (inverter.getPowerLevel() < 4) {
                                                     LOGGER.info("more invert power now");
                                                     offset = 1;
                                                 }
-                                                if (inverter.getPowerLevel() > 95) {
+                                                if (inverter.getPowerLevel() > 50) {
                                                     LOGGER.info("less power now");
                                                     offset = -1;
                                                 }
+                                                ThreadHelper.deepSleep(500);
                                                 LOGGER.info("PWM now: " + inverter.getPowerLevel() + ", offset: " + offset);
                                                 inverter.adjustCurrent(inverter.getPowerLevel() + offset);
                                             }
