@@ -109,16 +109,16 @@ public class ChargeManager {
                                             inverting = true;
                                         }
                                         if (inverting) {
-                                            if (inverter.getPowerLevel() < 5) {
+                                            if (load < 30) {
                                                 LOGGER.info("more invert power now");
                                                 offset = 1;
                                             }
-                                            if (inverter.getPowerLevel() > 95) {
+                                            if (load > 70) {
                                                 LOGGER.info("less power now");
                                                 offset = -1;
                                             }
                                             LOGGER.info("PWM now: " + inverter.getPowerLevel() + ", offset: " + offset);
-                                            inverter.adjustCurrent(inverter.getPowerLevel() + offset);
+                                            inverter.adjustCurrent(Math.max(1, Math.min(99, inverter.getPowerLevel() + offset)));
                                         }
                                     }
                                     lastShouldWeCharge = shouldWeCharge;
