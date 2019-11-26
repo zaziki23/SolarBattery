@@ -117,7 +117,7 @@ public class ChargeManager {
                                                     LOGGER.info("more invert power now");
                                                     offset = 1;
                                                 }
-                                                if (inverter.getPowerLevel() > 50) {
+                                                if (inverter.getPowerLevel() > 95) {
                                                     LOGGER.info("less power now");
                                                     offset = -1;
                                                 }
