@@ -1,6 +1,5 @@
 package com.solarbattery.battery;
 
-import com.solarbattery.charger.ChargeManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ws.palladian.helper.ThreadHelper;
@@ -11,6 +10,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.net.SocketException;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -28,6 +28,7 @@ public class Battery {
     private Map<Integer, Double> cellVoltages;
     private Socket socket;
     private long lastTime;
+    private Double lastOffset;
 
     final private Double CELL_SHUTDOWN_MAX_VOLTAGE = 4.20; // FIXME
     final private Double CELL_SHUTDOWN_MIN_VOLTAGE = 2.85; // FIXME
@@ -38,7 +39,7 @@ public class Battery {
     final private Double SHUTDOWN_MIN_VOLTAGE;
     final private Double SHUTDOWN_MAX_VOLTAGE;
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ChargeManager.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(Battery.class.getName());
 
     public void setCellVoltages(Map<Integer, Double> cellVoltages) {
         this.cellVoltages = cellVoltages;
@@ -46,6 +47,7 @@ public class Battery {
 
     public Battery(Integer numberOfCells) {
         this.numberOfCells = numberOfCells;
+        lastOffset = 0.0;
         cellVoltages = new HashMap<>();
         for (int i = 0; i < numberOfCells; i++) {
             cellVoltages.put(i + 1, 3.7);
@@ -78,7 +80,7 @@ public class Battery {
                 while (true) {
                     try {
                         long now = System.currentTimeMillis();
-                        long secondsAgo = now - TimeUnit.SECONDS.toMillis(1);
+                        long secondsAgo = now - TimeUnit.SECONDS.toMillis(2);
                         if (lastTime < secondsAgo) {
                             Byte[] first = new Byte[1024];
                             Byte[] second = new Byte[1024];
@@ -88,7 +90,6 @@ public class Battery {
                             message = hexStringToByteArray("DDA50300FFFD77");
                             boolean b = sendMessage(socket, message, second);
 
-                            LOGGER.info("parsing: " + b1 + ", " + b + ", V:" + voltage);
                             if (b && b1) {
 
                                 if (voltage > MAX_VOLTAGE) {
@@ -100,22 +101,23 @@ public class Battery {
                                 if (voltage < MIN_VOLTAGE) {
                                     setChargeable(true);
                                     setLoadable(false);
-                                    LOGGER.info("Voltage is to low: " + voltage);
+                                    LOGGER.error("Voltage is to low: " + voltage);
                                     continue;
                                 }
-                                LOGGER.info("CellVoltages: " + cellVoltages.toString());
                                 for (Integer cellNumber : cellVoltages.keySet()) {
                                     Double aDouble = cellVoltages.get(cellNumber);
                                     if (aDouble > CELL_SHUTDOWN_MAX_VOLTAGE) {
                                         LOGGER.error(cellVoltages.toString());
                                         setLoadable(false);
                                         setChargeable(false);
+                                        LOGGER.error("Cell " + cellNumber + " reached " + aDouble + "V");
                                         return;
                                     }
                                     if (aDouble < CELL_SHUTDOWN_MIN_VOLTAGE) {
                                         LOGGER.error(cellVoltages.toString());
                                         setLoadable(false);
                                         setChargeable(true);
+                                        LOGGER.error("Cell " + cellNumber + " reached " + aDouble + "V");
                                         return;
                                     }
                                     if (aDouble > CELL_MAX_VOLTAGE) {
@@ -137,12 +139,12 @@ public class Battery {
                                 setChargeable(true);
                                 setLoadable(true);
                                 lastTime = System.currentTimeMillis();
-                            } else {
-                                LOGGER.error("BMS message timed out, was invalid or just makes no sense");
                             }
                         }
+                        ThreadHelper.deepSleep(500);
                     } catch (Throwable t) {
                         t.printStackTrace();
+                        ThreadHelper.deepSleep(500);
                     }
                 }
             }
@@ -155,10 +157,8 @@ public class Battery {
     }
 
     public void setLoadable(boolean loadable) {
-        if (!loadable) {
-            LOGGER.info("battery is not ready for load");
-        } else {
-            LOGGER.info("battery is ready for load");
+        if (this.loadable != loadable) {
+            LOGGER.info("battery loadable: " + loadable);
         }
         this.loadable = loadable;
     }
@@ -170,11 +170,8 @@ public class Battery {
 
     public void setChargeable(boolean chargeable) {
 
-        if (this.chargeable && !chargeable) {
-            LOGGER.info("battery is not ready for charge");
-        }
-        if (!this.chargeable && chargeable) {
-            LOGGER.info("battery is ready for charge");
+        if (this.chargeable != chargeable) {
+            LOGGER.info("battery chargeable: " + chargeable);
         }
         this.chargeable = chargeable;
     }
@@ -196,19 +193,20 @@ public class Battery {
         double min = slimStats.getMin();
         double max = Math.min(CELL_SHUTDOWN_MAX_VOLTAGE, slimStats.getMax());
         double delta = max - min;
-        int multiplier = 40;
+        int multiplier = 50;
         Double myPowerLevel = powerlevel.doubleValue();
-        if(delta > 0.075) {
-            if(delta > 0.17) {
-                multiplier = 300;
-            }
-            double offset = (1 + (multiplier*delta));
+        if (delta > 0.075) {
+            Double offset = (1 + (multiplier * delta));
             myPowerLevel = Math.max(2, Math.min(100, powerlevel - offset));
-            if(oldPowerLevel <= 2 && powerlevel > 30 && myPowerLevel <= 2) {
+            if (oldPowerLevel <= 2 && powerlevel > 30 && myPowerLevel <= 2) {
                 // We are the reason why power is so low - lets try to increase it a little bit
-                myPowerLevel = myPowerLevel +3;
+                myPowerLevel = myPowerLevel + 3;
             }
-            LOGGER.info("charging power is to high, decreasing power by " + offset);
+            DecimalFormat formatter = new DecimalFormat("#.##");
+            if (!lastOffset.equals(offset)) {
+                LOGGER.info("cells are drifting delta is: " + formatter.format(delta) + "V, decreasing power by " + formatter.format(offset));
+            }
+            lastOffset = offset;
         }
 
         return myPowerLevel.intValue();
@@ -274,8 +272,6 @@ public class Battery {
                     returnCode = parseData(null, first);
                 }
 
-                LOGGER.info("got " + data + " from bms, parsing: " + returnCode);
-
                 // read as much as you want - blocks until timeout elapses
             } catch (java.net.SocketTimeoutException e) {
                 // read timed out - you may throw an exception of your choice
@@ -299,20 +295,27 @@ public class Battery {
             this.setSoC(first[23]);
         }
 
-        if (second != null && second.length > ((14*2) +5)) {
+        if (second != null && (second.length > ((13 * 2) + 5))) {
             List<Double> values = new ArrayList<>();
             for (int i = 0; i < 14; i++) {
-                int anInt = ((second[4 + (2 * i)] & 0xff) << 8) | (second[5 + (2 * i)] & 0xff);
-                if (anInt == 0.0) {
-                    break;
+                Byte aByte = second[4 + (2 * i)];
+                Byte anotherByte = second[5 + (2 * i)];
+                if (aByte != null && anotherByte != null) {
+                    int anInt = ((aByte & 0xff) << 8) | (anotherByte & 0xff);
+                    if (anInt == 0.0) {
+                        break;
+                    }
+                    double value = anInt / 1000.0;
+                    values.add(value);
+                } else {
+                    LOGGER.error("data from bms was invalid: " + second);
+                    return false;
                 }
-                double value = anInt / 1000.0;
-                values.add(value);
             }
 
             int i = 1;
             for (Double value : values) {
-                if(value > 5.0) {
+                if (value > 5.0) {
                     LOGGER.error("value for cell " + i + " is way to high - data is invalid");
                     return false;
                 } else {

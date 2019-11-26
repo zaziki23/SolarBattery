@@ -1,9 +1,10 @@
 package com.solarbattery;
 
 import com.solarbattery.charger.ChargeManager;
-import org.springframework.boot.*;
-import org.springframework.boot.autoconfigure.*;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @EnableAutoConfiguration
@@ -15,6 +16,7 @@ public class Example {
         chargeManager.run();
         return "Charger started";
     }
+
     @RequestMapping("/com/solarbattery/charger/stop")
     String stop() {
         ChargeManager chargeManager = ChargeManager.getInstance();
@@ -23,7 +25,8 @@ public class Example {
     }
 
     public static void main(String[] args) {
-        SpringApplication.run(Example.class, args);
+
+         SpringApplication.run(Example.class, args);
     }
 
 }
