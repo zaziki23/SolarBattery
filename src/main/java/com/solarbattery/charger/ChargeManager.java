@@ -113,7 +113,7 @@ public class ChargeManager {
                                                 inverting = true;
                                             }
                                             if (inverting) {
-                                                if (load < 35) {
+                                                if (load < 60) {
                                                     LOGGER.info("more invert power now");
                                                     offset = 1;
                                                 }
